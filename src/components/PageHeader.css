@@ -1,0 +1,32 @@
+.page-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    padding: 8rem 0 4rem;
+    color: white;
+    text-align: center;
+    position: relative;
+    margin-bottom: 2rem;
+    /* Optional: Add a subtle pattern overlay */
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.header-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: white;
+    letter-spacing: -0.01em;
+}
+
+.header-subtitle {
+    font-size: 1.2rem;
+    color: #cbd5e1;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .header-title {
+        font-size: 2.25rem;
+    }
+}
