@@ -62,7 +62,7 @@ const About = () => {
               <div className="section-label">Who We Are</div>
               <h2 className="section-title">A Community of <br />Innovators & Educators</h2>
               <p className="lead-text">
-                AETE® is a <strong>voluntary, membership-based professional association</strong> operating on non-profit and non-commercial principles.
+                AETE is a premier professional ecosystem for engineers and educators. Managed by Bitsky, we operate as a bridge between industry and academia, dedicated to technical excellence and skill development.
               </p>
               <p className="secondary-text">
                 We are dedicated to facilitating professional networking and academic collaboration among engineers and educators. By connecting the classroom with the corporate world, we ensure that education evolves in tandem with technology.

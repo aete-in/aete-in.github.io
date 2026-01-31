@@ -34,7 +34,7 @@ function App() {
             <Route path="vision-mission" element={<VisionMission />} />
             <Route path="programs" element={<Programs />} />
             <Route path="membership" element={<Membership />} />
-            <Route path="campus-chapters" element={<CampusChapters />} />
+            <Route path="campus-clubs" element={<CampusChapters />} />
             <Route path="collaborations" element={<Collaborations />} />
             <Route path="resource-persons" element={<ResourcePersons />} />
             <Route path="resource-network" element={<ResourceNetwork />} />

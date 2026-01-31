@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Edit } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -20,7 +20,7 @@ const Dashboard = () => {
         }
     }, [currentUser, navigate]);
 
-    if (!currentUser) return null;
+    if (!currentUser) return <Navigate to="/login" replace />;
 
     const handleLogout = async () => {
         try {

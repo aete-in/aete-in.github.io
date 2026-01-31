@@ -8,6 +8,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <App />
+      {/* Deployment Verification Timestamp */}
+      <div style={{ display: 'none' }}>{new Date().toISOString()}</div>
     </ErrorBoundary>
   </StrictMode>,
 )
+console.log('Deployment timestamp:', new Date().toISOString());

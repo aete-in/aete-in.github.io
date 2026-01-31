@@ -107,13 +107,18 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setCurrentUser(user);
-            if (user) {
-                await fetchUserData(user);
-            } else {
-                setUserData(null);
+            try {
+                setCurrentUser(user);
+                if (user) {
+                    await fetchUserData(user);
+                } else {
+                    setUserData(null);
+                }
+            } catch (error) {
+                console.error("Auth state change error:", error);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         });
 
         return unsubscribe;
@@ -124,7 +129,6 @@ export const AuthProvider = ({ children }) => {
         userData,
         signup,
         login,
-        logout,
         logout,
         resetPassword,
         resendVerification,

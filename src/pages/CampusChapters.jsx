@@ -20,7 +20,7 @@ const CampusChapters = () => {
 
   const chapters = [
     {
-      title: "Student Innovation Chapters",
+      title: "Student Innovation Clubs",
       icon: <Network size={40} />,
       desc: "Platforms for students to collaborate, innovate, and participate in technical challenges."
     },
@@ -38,16 +38,16 @@ const CampusChapters = () => {
 
   return (
     <div className="chapters-page">
-      <SEO title="Campus Chapters" description="Establish an AETE chapter at your institution: Student Innovation Chapters & Collaboration Cells." />
+      <SEO title="Campus Clubs" description="Establish an AETE club at your institution: Student Innovation Clubs & Collaboration Cells." />
       <PageHeader
-        title="Campus Chapters"
+        title="Campus Innovation Clubs"
         subtitle="Extending our reach through institutional partnerships."
       />
 
       <div className="container section">
         <div className="intro-text center">
           <p>
-            AETE facilitates the establishment of campus chapters to foster a culture of innovation and continuous learning. These chapters operate through mutual understanding and strictly institutional collaboration.
+            AETE facilitates the establishment of campus clubs to foster a culture of innovation and continuous learning. These clubs operate through mutual understanding and strictly institutional collaboration.
           </p>
         </div>
 
@@ -70,10 +70,10 @@ const CampusChapters = () => {
         </motion.div>
 
         <div className="cta-box">
-          <h2>Start a Chapter</h2>
-          <p>Interested in establishing an AETE chapter at your institution?</p>
+          <h2>Launch a Club</h2>
+          <p>Interested in establishing an AETE club at your institution?</p>
           <a
-            href="mailto:aete.india@gmail.com?subject=Inquiry: Establish AETE Campus Chapter&body=To AETE India Team,%0A%0AWe are interested in establishing an AETE Campus Chapter at our institution.%0A%0AInstitution Name:%0ALocation:%0AContact Person:%0ADesignation:%0APhone Number:%0A%0ARegards,"
+            href="mailto:aete.india@gmail.com?subject=Inquiry: Establish AETE Campus Club&body=To AETE India Team,%0A%0AWe are interested in establishing an AETE Campus Club at our institution.%0A%0AInstitution Name:%0ALocation:%0AContact Person:%0ADesignation:%0APhone Number:%0A%0ARegards,"
             className="btn btn-secondary"
           >
             Email Us with Details

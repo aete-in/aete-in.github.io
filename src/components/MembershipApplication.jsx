@@ -27,6 +27,9 @@ const MembershipApplication = () => {
     const [isCropping, setIsCropping] = useState(false); // Restored state
     const [uploadingPhoto, setUploadingPhoto] = useState(false); // Loading state for photo only
 
+    // Debug logs moved to top level
+    const [logs, setLogs] = useState([]);
+
     // Form States
     const [formData, setFormData] = useState({
         // Student
@@ -85,7 +88,7 @@ const MembershipApplication = () => {
             setError("Failed to crop image.");
         }
     };
-    const [logs, setLogs] = useState([]); // Debug logs
+
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -146,42 +149,45 @@ const MembershipApplication = () => {
                 });
             }
 
-            if (membershipType === 'student') {
-                await updateMembershipInDB('student', 'active', 'free', details);
-                setStatus('Student Membership Activated Successfully!');
-                await fetchUserData(); // Refresh state for students too
-            } else {
-                const fee = membershipType === 'institutional' ? 40000 : 100;
-                addLog("Starting payment flow");
-
-                const paymentPromise = handlePayment(
-                    userData?.name || currentUser.email,
-                    currentUser.email,
-                    userData?.phone || "",
-                    fee,
-                    async (paymentId) => {
-                        addLog("Payment Success Callback");
-                        try {
-                            await updateMembershipInDB(membershipType, 'active', paymentId, details);
-                            setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership Activated Successfully!`);
-                            await fetchUserData(); // Refresh dashboard state
-                        } catch (error) {
-                            setStatus('Payment successful but DB update failed: ' + error.message);
-                        }
-                    }
-                );
-
-                const timeoutPromise = new Promise((_, reject) =>
-                    setTimeout(() => {
-                        addLog("Timeout triggered");
-                        reject(new Error("Payment initialization timed out."));
-                    }, 15000)
-                );
-
-                addLog("Awaiting race");
-                await Promise.race([paymentPromise, timeoutPromise]);
-                addLog("Race completed");
+            // Determine Fee
+            let fee = 0;
+            switch (membershipType) {
+                case 'student': fee = 1.5; break;
+                case 'professional': fee = 10; break;
+                case 'institutional': fee = 1000; break;
+                default: fee = 1000;
             }
+
+            addLog("Starting payment flow for " + membershipType + " with fee: " + fee);
+
+            const paymentPromise = handlePayment(
+                userData?.name || currentUser.email,
+                currentUser.email,
+                userData?.phone || "",
+                fee,
+                async (paymentId) => {
+                    addLog("Payment Success Callback");
+                    try {
+                        await updateMembershipInDB(membershipType, 'active', paymentId, details);
+                        setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership Activated Successfully!`);
+                        await fetchUserData(); // Refresh dashboard state
+                    } catch (error) {
+                        setStatus('Payment successful but DB update failed: ' + error.message);
+                    }
+                }
+            );
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => {
+                    addLog("Timeout triggered");
+                    reject(new Error("Payment initialization timed out."));
+                }, 15000)
+            );
+
+            addLog("Awaiting race");
+            await Promise.race([paymentPromise, timeoutPromise]);
+            addLog("Race completed");
+
         } catch (error) {
             addLog("Error caught: " + error.message);
             console.error("Application Error:", error);
@@ -237,9 +243,9 @@ const MembershipApplication = () => {
                     className="form-control"
                     style={{ maxWidth: '300px', display: 'inline-block' }}
                 >
-                    <option value="student">Student Member (Free)</option>
-                    <option value="professional">Professional Member (₹100)</option>
-                    <option value="institutional">Institutional Partner (₹40,000)</option>
+                    <option value="student">Student Learner (Launch Offer: ₹1.5)</option>
+                    <option value="professional">Professional Network (Launch Offer: ₹10)</option>
+                    <option value="institutional">Campus Partner (₹1,000)</option>
                 </select>
             </div>
 
@@ -434,7 +440,7 @@ const MembershipApplication = () => {
                 disabled={loading}
                 className="btn btn-primary mt-2"
             >
-                {loading ? 'Processing...' : (membershipType === 'student' ? 'Apply for Free' : `Pay ₹${membershipType === 'institutional' ? '40,000' : '100'} & Apply`)}
+                {loading ? 'Processing...' : (membershipType === 'student' ? 'Pay ₹1.5 & Apply' : `Pay ₹${membershipType === 'institutional' ? '1,000' : '10'} & Apply`)}
             </button>
 
             {status && <div className="alert mt-3" style={{ background: status.includes('Error') ? '#fed7d7' : '#e6fffa', color: status.includes('Error') ? '#c53030' : '#008080', padding: '1rem', borderRadius: '4px' }}>{status}</div>}

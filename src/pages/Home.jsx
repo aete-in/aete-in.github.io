@@ -77,7 +77,7 @@ const Home = () => {
                   Find an Expert <ArrowRight size={18} />
                 </Link>
                 <Link to="/membership" className="btn-glass">
-                  Join AETE
+                  View Access Plans
                 </Link>
               </motion.div>
             </motion.div>
@@ -129,7 +129,7 @@ const Home = () => {
             <div className="dock-grid">
               <div className="dock-item">
                 <h3>500+</h3>
-                <p>Professional Members</p>
+                <p>Certified Professionals</p>
               </div>
               <div className="dock-item">
                 <h3>120+</h3>
@@ -141,7 +141,7 @@ const Home = () => {
               </div>
               <div className="dock-item">
                 <h3>25+</h3>
-                <p>Active Chapters</p>
+                <p>Campus Clubs</p>
               </div>
             </div>
           </div>
@@ -221,7 +221,7 @@ const Home = () => {
             </div>
             <div className="testimonial-card">
               <div className="stars"><Star size={16} fill="#f59e0b" color="#f59e0b" /> <Star size={16} fill="#f59e0b" color="#f59e0b" /> <Star size={16} fill="#f59e0b" color="#f59e0b" /> <Star size={16} fill="#f59e0b" color="#f59e0b" /> <Star size={16} fill="#f59e0b" color="#f59e0b" /></div>
-              <p className="quote">"The technical workshops provided by AETE members gave our students real-world insights that textbooks couldn't offer."</p>
+              <p className="quote">"The technical workshops provided by AETE experts gave our students real-world insights that textbooks couldn't offer."</p>
               <div className="author">
                 <div className="author-avatar av-2"></div>
                 <div>
@@ -237,11 +237,11 @@ const Home = () => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container center-text">
-          <h2>Ready to Transform the Society?</h2>
+          <h2>Ready to Transform Engineering?</h2>
           <p>Join India's fastest growing network of engineering professionals.</p>
           <div className="cta-buttons">
             <Link to="/contact" className="btn btn-white">Partner with Us</Link>
-            <Link to="/membership" className="btn btn-outline-white">Become a Member</Link>
+            <Link to="/membership" className="btn btn-outline-white">Get Certified</Link>
           </div>
         </div>
       </section>

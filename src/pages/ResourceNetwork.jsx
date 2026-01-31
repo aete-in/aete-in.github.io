@@ -14,6 +14,24 @@ const ResourceNetwork = () => {
     const { currentUser, userData, loading } = useAuth();
     const navigate = useNavigate();
 
+    const [persons, setPersons] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedPerson, setSelectedPerson] = useState(null);
+
+    useEffect(() => {
+        const usersRef = ref(db, 'users');
+        const unsubscribe = onValue(usersRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const loadedPersons = Object.values(data).filter(user =>
+                    user.membershipType === 'professional' && user.membershipStatus === 'active'
+                );
+                setPersons(loadedPersons);
+            }
+        });
+        return unsubscribe;
+    }, []);
+
     useEffect(() => {
         if (!loading) {
             if (!currentUser) {
@@ -58,23 +76,7 @@ const ResourceNetwork = () => {
         );
     }
 
-    const [persons, setPersons] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedPerson, setSelectedPerson] = useState(null);
 
-    useEffect(() => {
-        const usersRef = ref(db, 'users');
-        const unsubscribe = onValue(usersRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const loadedPersons = Object.values(data).filter(user =>
-                    user.membershipType === 'professional' && user.membershipStatus === 'active'
-                );
-                setPersons(loadedPersons);
-            }
-        });
-        return unsubscribe;
-    }, []);
 
     const filteredPersons = persons.filter(person => {
         const term = searchTerm.toLowerCase();

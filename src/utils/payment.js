@@ -12,7 +12,7 @@ export const loadRazorpay = () => {
     });
 };
 
-export const handlePayment = async (name, email, phone, price, onSuccess) => {
+export const handlePayment = async (name, email, phone, price, description, onSuccess) => {
     const res = await loadRazorpay();
 
     if (!res) {
@@ -30,8 +30,8 @@ export const handlePayment = async (name, email, phone, price, onSuccess) => {
         key: key,
         amount: price * 100, // Amount in paise
         currency: "INR",
-        name: "AETE Membership",
-        description: "Professional Membership Fee",
+        name: "AETE Platform",
+        description: description || "Platform Access Fee",
         image: "/logo.png",
         handler: function (response) {
             onSuccess(response.razorpay_payment_id);

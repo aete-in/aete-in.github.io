@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { PRICING_PLANS } from '../data/pricing';
 import { User, Users, Building, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -25,7 +26,8 @@ const Membership = () => {
       currentUser.displayName || currentUser.email,
       currentUser.email,
       userData?.phone || currentUser.phoneNumber || "", // Prioritize database phone, then auth phone
-      member.price,
+      member.numericPrice,
+      member.title, // Product Description
       async (paymentId) => {
         // On Success
         console.log("Payment Successful:", paymentId);
@@ -87,71 +89,30 @@ const Membership = () => {
     visible: { opacity: 1, y: 0 }
   };
 
-  const members = [
-    {
-      type: "Student Member",
-      icon: <User size={40} />,
-      desc: "For engineering students keen on upgrading skills and innovation. Access to student chapters and competitions.",
-      color: "var(--color-primary)",
-      price: 1.5,
-      isOffer: true,
-      originalPrice: "₹150",
-      offerPrice: "99% OFF", // Changed from ₹1.5
-      period: "Lifetime",
-      benefits: [
-        "Access to Resource Persons Network",
-        "Official Student Membership Certificate",
-        "Discounts on workshops & hackathons",
-        "Access to Technical Chapters"
-      ]
-    },
-    {
-      type: "Professional Member",
-      icon: <Briefcase size={40} />,
-      desc: "For Faculty, Academicians, and Industry Professionals. Unlocks unlimited access to the Resource Persons Network.",
-      color: "var(--color-secondary)",
-      price: 10,
-      isOffer: true,
-      originalPrice: "₹1,000",
-      offerPrice: "99% OFF", // Changed from ₹10
-      period: "Lifetime",
-      benefits: [
-        "Access to Resource Persons Network",
-        "Professional Membership Certificate",
-        "Voting rights in AETE Elections",
-        "Eligibility for 'Fellow' upgrade"
-      ]
-    },
-    {
-      type: "Institutional Partner",
-      icon: <Building size={40} />,
-      desc: "For Engineering Colleges and Universities. Establish chapters and gain direct access to expert speakers.",
-      color: "#2b6cb0",
-      price: 1000,
-      isOffer: false,
-      offerPrice: "₹1,000",
-      period: "Yearly",
-      benefits: [
-        "Access to Resource Persons Network",
-        "Certificate of Institutional Partnership",
-        "Eligibility for AETE Funding Grants",
-        "Host Official AETE Events"
-      ]
+  /* 
+   * Mapping logic to render icons based on string names from data 
+   */
+  const getIcon = (iconName) => {
+    switch (iconName) {
+      case 'User': return <User size={40} />;
+      case 'Briefcase': return <Briefcase size={40} />;
+      case 'Building': return <Building size={40} />;
+      default: return <User size={40} />;
     }
-  ];
+  };
 
   return (
     <div className="membership-page">
       <SEO title="Membership" description="Join AETE as a Student, Professional, or Institutional Partner." />
       <PageHero
-        title="Membership Network"
+        title="Professional Engineering Network"
         subtitle="Join a collaborative community of engineers and educators."
       />
 
       <div className="container section">
         <div className="intro-text center">
           <p>
-            Membership with AETE is a statement of professional commitment. Join a distinguished cadre of engineers and educators
+            Joining the AETE Community is a statement of professional commitment. Join a distinguished cadre of engineers and educators
             dedicated to shaping the future of technology. Gain recognition, influence curricula, and access an exclusive network of peers.
           </p>
         </div>
@@ -163,52 +124,57 @@ const Membership = () => {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {members.map((member, index) => (
+          {PRICING_PLANS.map((plan, index) => (
             <motion.div
               key={index}
               variants={itemVariants}
               className="member-card"
-              style={{ borderTopColor: member.color }}
+              style={{ borderTopColor: plan.ui.color }}
             >
-              {member.isOffer && <div className="launch-badge">Launch Offer</div>}
+              {plan.ui.isOffer && <div className="launch-badge">Launch Offer</div>}
 
-              <div className="icon-box" style={{ color: member.color }}>
-                {member.icon}
+              <div className="icon-box" style={{ color: plan.ui.color }}>
+                {getIcon(plan.ui.iconName)}
               </div>
-              <h3 style={{ color: member.color }}>{member.type}</h3>
+              <h3 style={{ color: plan.ui.color }}>{plan.title}</h3>
 
               <div className="lifetime-badge">
-                {member.period === "Lifetime" ? "Lifetime Membership" : "Annual Membership"}
+                {plan.ui.period === "Lifetime" ? "LIFETIME ACCESS PLAN" : "ANNUAL PARTNER PLAN"}
               </div>
 
               <div className="price-tag mb-3">
-                <span className="fee-label">Platform & Membership Fee</span>
+                <span className="fee-label">PLATFORM & ACCESS FEE</span>
 
                 <div className="pricing-stack">
+                  {/* Show Strikethrough if it's an offer */}
                   <span
                     className="original-price-row"
                     style={{
-                      visibility: member.isOffer ? 'visible' : 'hidden',
-                      opacity: member.isOffer ? 1 : 0
+                      visibility: plan.ui.isOffer ? 'visible' : 'hidden',
+                      opacity: plan.ui.isOffer ? 1 : 0,
+                      display: plan.ui.isOffer ? 'block' : 'none'
                     }}
                   >
-                    <span className="strike">{member.originalPrice || "₹0,000"}</span>
-                    <span className="gst-suffix">+ GST</span>
+                    <span className="strike">{plan.originalPrice || "₹0,000"}</span>
+                    <span className="gst-suffix"></span>
                   </span>
 
-                  <span className="final-price" style={{ color: member.color }}>
-                    {member.offerPrice} <span className="gst-small">{member.isOffer ? "" : "+ GST"}</span>
+                  <span className="final-price" style={{ color: plan.ui.color }}>
+                    {plan.price} <span className="gst-small">{plan.ui.isOffer ? "" : "+ GST"}</span>
                   </span>
                 </div>
               </div>
 
-              <p>{member.desc}</p>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                {plan.subtitle}
+              </h4>
+              <p>{plan.description}</p>
 
               <ul className="benefits-list">
-                {member.benefits.map((benefit, i) => (
+                {plan.features.map((benefit, i) => (
                   <li
                     key={i}
-                    style={benefit.includes("Resource Persons Network") ? { fontWeight: '700', color: member.color } : {}}
+                    style={benefit.includes("Resource Persons Network") ? { fontWeight: '700', color: plan.ui.color } : {}}
                   >
                     <svg
                       className="check-icon"
@@ -218,7 +184,7 @@ const Membership = () => {
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      style={benefit.includes("Resource Persons Network") ? { color: member.color } : {}}
+                      style={benefit.includes("Resource Persons Network") ? { color: plan.ui.color } : {}}
                     >
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
@@ -227,13 +193,13 @@ const Membership = () => {
                 ))}
               </ul>
 
-              {userData?.membershipType === member.type ? (
+              {userData?.membershipType === plan.role.toLowerCase() || (userData?.membershipType === 'professional' && plan.role === 'Professional') ? (
                 <button disabled className="btn btn-sm btn-success" style={{ borderColor: 'transparent', background: '#dcfce7', color: '#166534' }}>
                   Active Plan
                 </button>
               ) : (
-                <button onClick={() => handleApply(member)} className="btn btn-sm btn-outline-primary" style={{ borderColor: member.color, color: member.color }}>
-                  Apply for Membership
+                <button onClick={() => handleApply({ ...plan, ...plan.ui, type: plan.role })} className="btn btn-sm btn-outline-primary" style={{ borderColor: plan.ui.color, color: plan.ui.color }}>
+                  {plan.buttonText}
                 </button>
               )}
             </motion.div>
@@ -270,8 +236,10 @@ const Membership = () => {
             flex-direction: column;
             align-items: center;
             margin-bottom: 1.5rem;
-            min-height: 80px;
-            justify-content: flex-start;
+            height: 120px; /* Fixed height accommodating largest stack */
+            justify-content: flex-start; /* Keep label at top */
+            padding-top: 0.5rem;
+            width: 100%;
         }
 
         .pricing-stack {
@@ -279,6 +247,8 @@ const Membership = () => {
             flex-direction: column;
             align-items: center;
             gap: 0.25rem;
+            margin-top: auto; /* Push to bottom of container */
+            margin-bottom: auto; /* Center vertically in remaining space */
         }
 
         .original-price-row {
@@ -318,6 +288,7 @@ const Membership = () => {
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 0.5rem;
+            align-self: center; /* Ensure centered horizontally */
         }
 
         .payment-disclaimer {
@@ -408,6 +379,7 @@ const Membership = () => {
           margin-bottom: 2rem;
           font-size: 0.95rem;
           line-height: 1.6;
+          min-height: 50px; /* Force consistent height */
         }
 
         .benefits-list {
