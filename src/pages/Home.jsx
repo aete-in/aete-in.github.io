@@ -166,8 +166,16 @@ const Home = () => {
               <Link to="/about" className="btn btn-secondary text-sm">Learn More About Us</Link>
             </div>
             <div className="split-image relative-box">
-              <div className="image-block block-1"></div>
-              <div className="image-block block-2"></div>
+              <img
+                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80"
+                alt="Students collaborating"
+                className="image-block block-1"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80"
+                alt="Presentation"
+                className="image-block block-2"
+              />
             </div>
           </div>
         </div>
@@ -479,49 +487,72 @@ const Home = () => {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                gap: 0;
+                gap: 2.5rem; /* Increased gap */
                 text-align: center;
-                height: 100%;
+                height: auto;
+                padding-top: 3rem; /* More top padding */
             }
 
-            .hero-visual-area { display: none; } /* HIDDEN */
+            .hero-visual-area { 
+                display: flex; 
+                height: 240px; /* Reduced container height */
+                width: 100%;
+                order: -1; 
+                margin-bottom: 0.5rem;
+            }
+
+            .orbital-system {
+                height: 220px; /* Smaller orbit as requested */
+            }
+            
+            .center-logo { font-size: 2rem; } /* Smaller center logo to match orbit */
 
             .hero-text-area {
                 width: 100%;
                 height: auto;
-                justify-content: center;
+                justify-content: flex-start;
                 align-items: center;
+                padding-bottom: 3rem; /* More bottom padding */
             }
 
             /* Ultra Compact Text */
             .main-title {
-                font-size: clamp(1.8rem, 4vh, 2.4rem);
-                margin-bottom: 0.5rem;
+                font-size: clamp(2.4rem, 5.5vh, 3.2rem); /* Even bigger text */
+                margin-bottom: 1.25rem; /* More spacing below title */
+                line-height: 1.15;
+                letter-spacing: -0.02em;
             }
             .hero-subtitle {
-                font-size: 0.9rem;
-                line-height: 1.35;
-                margin-bottom: 1.25rem;
+                font-size: 1rem; /* Slightly larger subtitle */
+                line-height: 1.6;
+                margin-bottom: 2rem; /* More spacing before buttons */
+                color: #dbeafe; /* Lighter/Brighter for contrast */
             }
             
             .action-buttons {
                 justify-content: center;
-                gap: 0.5rem;
+                gap: 1rem; /* More space between buttons */
+                flex-direction: column; /* Stack buttons on very small screens if needed, but keeping row for now */
+                width: 100%;
+            }
+            .btn-glow, .btn-glass {
+                width: 100%; /* Full width buttons on mobile */
+                justify-content: center;
+                padding: 1rem;
             }
 
             /* Compact 2x2 Stats */
             .stats-dock {
-                padding: 1rem 0;
-                /* Solid dark for mobile performance */
-                background: rgba(15, 23, 42, 0.95); 
+                padding: 1.5rem 0;
+                background: rgba(15, 23, 42, 0.98); 
             }
             .dock-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem;
-                row-gap: 0.8rem;
+                gap: 1rem;
+                row-gap: 1.5rem;
             }
-            .dock-item h3 { font-size: 1.5rem; }
-            .dock-item p { font-size: 0.65rem; }
+            .dock-item h3 { font-size: 1.6rem; }
+            .dock-item p { font-size: 0.7rem; }
         }
 
         /* --- ULTRA COMPACT MOBILE FIX (<750px Height) --- */
@@ -555,9 +586,9 @@ const Home = () => {
         .feature-list li { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; font-weight: 500; color: #334155; }
         .check-icon { color: var(--color-secondary); }
         .relative-box { position: relative; height: 400px; }
-        .image-block { position: absolute; background-color: #cbd5e1; border-radius: 16px; }
-        .block-1 { top: 0; right: 0; width: 80%; height: 80%; background-image: url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80'); background-size: cover; box-shadow: 0 20px 40px rgba(0,0,0,0.1); z-index: 2; }
-        .block-2 { bottom: 0; left: 0; width: 60%; height: 60%; background-image: url('https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80'); background-size: cover; z-index: 1; opacity: 0.8; }
+        .image-block { position: absolute; border-radius: 16px; object-fit: cover; }
+        .block-1 { top: 0; right: 0; width: 80%; height: 80%; box-shadow: 0 20px 40px rgba(0,0,0,0.1); z-index: 2; }
+        .block-2 { bottom: 0; left: 0; width: 60%; height: 60%; z-index: 1; opacity: 0.9; border: 4px solid white; }
         
         .bg-gradient { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); color: white; padding-bottom: 6rem; }
         .white { color: white !important; }
@@ -600,10 +631,11 @@ const Home = () => {
 
         @media (max-width: 900px) {
             .split-layout { grid-template-columns: 1fr; }
-            .image-block { display: none; }
+            .split-image { display: none; } /* Hide the Container entirely */
             .stats-grid { flex-wrap: wrap; gap: 2rem; }
             .stat-divider { display: none; }
             .stat-item { width: 45%; }
+            .mobile-pad-top { padding-top: 2rem; } /* Reduce top padding on mobile */
         }
       `}</style>
     </div>

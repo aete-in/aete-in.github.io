@@ -97,12 +97,12 @@ const ResourceNetwork = () => {
                 subtitle="Connect with a voluntary network of experts and mentors."
             />
 
-            <div className="container section">
+            <div className="container section pt-0 mobile-section-adjust">
 
                 {/* Map Section */}
                 <ResourceMap persons={persons} onMarkerClick={setSelectedPerson} />
 
-                <div className="search-filter mb-5">
+                <div className="search-filter mb-4 mobile-mb-3">
                     <input
                         type="text"
                         placeholder="Search by name, expertise, or location..."
@@ -281,12 +281,27 @@ const ResourceNetwork = () => {
             </AnimatePresence>
 
             <style jsx="true">{`
+
+                .mobile-section-adjust {
+                    padding-top: 1rem;
+                }
+                .mobile-mb-3 {
+                    margin-bottom: 1.5rem;
+                }
+                .mb-4 { margin-bottom: 2rem; }
                 .mb-5 { margin-bottom: 3rem; }
+                
+                @media (min-width: 768px) {
+                    .mobile-section-adjust { padding-top: var(--spacing-xl); }
+                    .mobile-mb-3 { margin-bottom: 3rem; }
+                }
                 
                 .search-bar {
                     width: 100%;
                     max-width: 600px;
-                    padding: 1rem 1.5rem;
+                    width: 100%;
+                    max-width: 600px;
+                    padding: 0.75rem 1.25rem;
                     border: 1px solid #e2e8f0;
                     border-radius: 50px;
                     font-size: 1rem;
@@ -318,8 +333,15 @@ const ResourceNetwork = () => {
 
                 .experts-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                    gap: 2.5rem;
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    gap: 1.5rem;
+                }
+                
+                @media (min-width: 768px) {
+                    .experts-grid {
+                         gap: 2.5rem;
+                    }
                 }
 
                 .expert-card {
@@ -341,12 +363,18 @@ const ResourceNetwork = () => {
                 }
 
                 .expert-card-content {
-                    padding: 2rem;
+                    padding: 1.25rem;
                     text-align: center;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     height: 100%;
+                }
+
+                @media (min-width: 768px) {
+                    .expert-card-content {
+                        padding: 2rem;
+                    }
                 }
 
                 .avatar-large {
@@ -497,14 +525,25 @@ const ResourceNetwork = () => {
                 .modal-content {
                     background: white;
                     border-radius: 20px;
-                    width: 95%;
+                    width: 100%;
                     max-width: 900px;
-                    max-height: 90vh;
+                    height: 100%;
+                    max-height: 100vh;
                     overflow-y: auto;
                     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
                     position: relative;
                     display: flex;
                     flex-direction: column;
+                    border-radius: 0;
+                }
+
+                @media (min-width: 768px) {
+                    .modal-content {
+                        height: auto;
+                        max-height: 90vh;
+                        border-radius: 20px;
+                        width: 95%;
+                    }
                 }
 
                 .close-button {
@@ -536,7 +575,7 @@ const ResourceNetwork = () => {
 
                 /* Sidebar Style for Details */
                 .modal-sidebar {
-                    padding: 2.5rem;
+                    padding: 1.5rem 1.25rem;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -546,17 +585,17 @@ const ResourceNetwork = () => {
                 }
 
                 .modal-main {
-                    padding: 2.5rem;
+                    padding: 1.5rem 1.25rem;
                     background: white;
                     flex: 1;
                 }
 
                 .modal-avatar {
-                    width: 160px;
-                    height: 160px;
+                    width: 100px;
+                    height: 100px;
                     border-radius: 50%;
                     overflow: hidden;
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 1rem;
                     border: 4px solid white;
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
                     background: #f7fafc;
@@ -570,16 +609,16 @@ const ResourceNetwork = () => {
                 .modal-designation {
                     color: var(--color-secondary);
                     font-weight: 600;
-                    font-size: 1.1rem;
-                    margin-bottom: 0.5rem;
-                    line-height: 1.4;
+                    font-size: 1rem;
+                    margin-bottom: 0.25rem;
+                    line-height: 1.3;
                 }
 
                 .modal-org {
                     color: #718096;
-                    font-size: 1rem;
-                    margin-bottom: 1.5rem;
-                    line-height: 1.4;
+                    font-size: 0.9rem;
+                    margin-bottom: 1rem;
+                    line-height: 1.3;
                 }
 
                 /* Responsive Desktop layout */
@@ -593,10 +632,14 @@ const ResourceNetwork = () => {
                         flex-shrink: 0;
                         border-right: 1px solid #edf2f7;
                         border-bottom: none;
-                        padding-top: 4rem; /* Spacing for close button */
+                        padding: 4rem 2.5rem; /* Spacing for close button */
                     }
                     .modal-main {
-                        padding-top: 4rem;
+                        padding: 4rem 2.5rem;
+                    }
+                    .modal-avatar {
+                        width: 160px;
+                        height: 160px;
                     }
                     .modal-meta-grid {
                          grid-template-columns: repeat(2, 1fr);
