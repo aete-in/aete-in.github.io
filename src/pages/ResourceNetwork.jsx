@@ -18,67 +18,57 @@ const ResourceNetwork = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedPerson, setSelectedPerson] = useState(null);
 
+    // Filter Logic based on Visibility Rules
+    // P1: Paid Profile -> Visible to Everyone
+    // P2: Free Profile -> Visible ONLY to Payment/Tier Users (Paid Professional / Institutional)
+    // P2: Free Profile -> Visible ONLY to Payment/Tier Users (Paid Professional / Institutional)
+    // Fix: Check for 'active' status and ensure tier is NOT 'free'. This handles Legacy users (tier=undefined) as Paid.
+    const isViewerPaid = userData?.membershipStatus === 'active' && userData?.tier !== 'free';
+
     useEffect(() => {
         const usersRef = ref(db, 'users');
         const unsubscribe = onValue(usersRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                const loadedPersons = Object.values(data).filter(user =>
-                    user.membershipType === 'professional' && user.membershipStatus === 'active'
-                );
+                // Fetch ALL active professionals (free or paid)
+                const loadedPersons = Object.values(data).filter(user => {
+                    // Include:
+                    // 1. Professionals (Active)
+                    // 2. Paid Students (tier !== 'free') (Active)
+                    if (user.membershipStatus !== 'active') return false;
+
+                    const isPaidStudent = user.membershipType === 'student' && user.tier !== 'free';
+                    const isProfessional = user.membershipType === 'professional';
+
+                    return isProfessional || isPaidStudent;
+                });
                 setPersons(loadedPersons);
             }
         });
         return unsubscribe;
     }, []);
 
-    useEffect(() => {
-        if (!loading) {
-            if (!currentUser) {
-                navigate('/login', { state: { from: '/resource-network' } });
-            } else if (userData?.membershipType !== 'professional' && userData?.membershipType !== 'institutional') {
-                // Redirect logic
-            }
-        }
-    }, [currentUser, userData, loading, navigate]);
+    // Access Denied / Redirect Logic REMOVED. Public access allowed for filtered list.
+    // If we wanted to block the page entirely for non-logged in users, we could keep it used, but
+    // the requirement implies "visible if logged in user is a paid type user" for unpaid profiles,
+    // and "open to all" for paid profiles. This implies the page itself must be accessible.
 
     if (loading) return null;
 
-    if (!currentUser || (userData?.membershipType !== 'professional' && userData?.membershipType !== 'institutional')) {
-        return (
-            <div className="access-denied-page">
-                <SEO title="Access Denied" />
-                <PageHeader title="Resource Persons Network" subtitle="Exclusive to Professional Members" />
-                <div className="container section center">
-                    <div className="alert-box">
-                        <UserCheck size={48} className="mb-3" />
-                        <h2>Access Restricted</h2>
-                        <p>This content is exclusively available to <strong>Professional Members</strong> of AETE.</p>
-                        <p className="mb-4">Upgrade your membership to access the network of industry experts and academic leaders.</p>
-                        <button onClick={() => navigate('/membership')} className="btn btn-primary">Upgrade Membership</button>
-                    </div>
-                </div>
-                <style jsx="true">{`
-                    .center { text-align: center; }
-                    .alert-box {
-                        max-width: 600px;
-                        margin: 0 auto;
-                        padding: 3rem;
-                        background: #fff;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-                        border-top: 5px solid var(--color-secondary);
-                    }
-                    .mb-3 { margin-bottom: 1rem; color: var(--color-secondary); }
-                    .mb-4 { margin-bottom: 2rem; color: #718096; }
-                `}</style>
-            </div>
-        );
-    }
-
-
-
     const filteredPersons = persons.filter(person => {
+        // Visibility Check
+        const isProfilePaid = person.tier === 'paid'; // Assumes 'tier' is set. If undefined, treat as free? 
+        // Logic: Visible if (Profile is Paid) OR (Viewer is Paid/Institutional)
+        // Note: If existing users don't have 'tier', we might need to assume they are paid or free.
+        // Let's assume 'paid' for safety if they were migrated, or 'free' if strict. 
+        // Plan said: "Existing active members are Paid".
+        // So: const effectiveTier = person.tier || 'paid';
+        const effectiveTier = person.tier || 'paid'; // Default to paid for legacy active users
+
+        const isVisible = (effectiveTier === 'paid') || isViewerPaid;
+
+        if (!isVisible) return false;
+
         const term = searchTerm.toLowerCase();
         return (
             person.name?.toLowerCase().includes(term) ||
@@ -101,6 +91,21 @@ const ResourceNetwork = () => {
 
                 {/* Map Section */}
                 <ResourceMap persons={persons} onMarkerClick={setSelectedPerson} />
+
+                {!isViewerPaid && (
+                    <div className="limit-banner mb-4">
+                        <div className="banner-content">
+                            <Lock size={20} className="banner-icon" />
+                            <p>
+                                <strong>Limited View:</strong> You are viewing a restricted list of Resource Persons.
+                                <br className="mobile-break" />
+                                Upgrade to a <strong>Paid Membership</strong> to access the full network.
+                            </p>
+                        </div>
+                        <button className="btn-upgrade" onClick={() => navigate('/membership')}>Upgrade Now</button>
+                    </div>
+                )}
+
 
                 <div className="search-filter mb-4 mobile-mb-3">
                     <input
@@ -281,6 +286,43 @@ const ResourceNetwork = () => {
             </AnimatePresence>
 
             <style jsx="true">{`
+
+                .limit-banner {
+                    background: #fff5f5;
+                    border: 1px solid #feb2b2;
+                    border-radius: 8px;
+                    padding: 1rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                }
+                .banner-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    color: #c53030;
+                }
+                .banner-icon { flex-shrink: 0; }
+                .btn-upgrade {
+                    background: #c53030;
+                    color: white;
+                    border: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    font-size: 0.9rem;
+                }
+                .btn-upgrade:hover { background: #9b2c2c; }
+                .mobile-break { display: none; }
+                @media (max-width: 600px) {
+                    .mobile-break { display: block; }
+                    .limit-banner { flex-direction: column; align-items: flex-start; text-align: left; }
+                    .btn-upgrade { width: 100%; }
+                }
 
                 .mobile-section-adjust {
                     padding-top: 1rem;

@@ -256,7 +256,7 @@ const Home = () => {
 
       <style jsx="true">{`
         /* --- GLOBAL LAYOUT --- */
-        :global(body) { margin: 0; padding: 0; overflow-x: hidden; }
+        :global(body) { margin: 0; padding: 0; }
 
         .landing-wrapper {
           position: relative;
@@ -503,6 +503,7 @@ const Home = () => {
 
             .orbital-system {
                 height: 220px; /* Smaller orbit as requested */
+                max-width: 100%; /* Prevent overflow */
             }
             
             .center-logo { font-size: 2rem; } /* Smaller center logo to match orbit */
@@ -517,10 +518,11 @@ const Home = () => {
 
             /* Ultra Compact Text */
             .main-title {
-                font-size: clamp(2.4rem, 5.5vh, 3.2rem); /* Even bigger text */
-                margin-bottom: 1.25rem; /* More spacing below title */
+                font-size: clamp(2rem, 5.5vh, 2.8rem); /* Slightly reduced max size for safety */
+                margin-bottom: 1rem;
                 line-height: 1.15;
                 letter-spacing: -0.02em;
+                word-wrap: break-word; /* Ensure long words break */
             }
             .hero-subtitle {
                 font-size: 1rem; /* Slightly larger subtitle */
@@ -611,7 +613,7 @@ const Home = () => {
         .glass-card h3 { color: white; font-size: 1.35rem; margin-bottom: 1rem; }
         .glass-card p { opacity: 0.7; font-size: 0.95rem; line-height: 1.6; }
         
-        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; }
+        .testimonial-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
         .testimonial-card { background: white; padding: 2.5rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .stars { margin-bottom: 1rem; display: flex; gap: 0.2rem; }
         .quote { font-size: 1.1rem; color: #334155; font-style: italic; margin-bottom: 2rem; }
@@ -636,6 +638,12 @@ const Home = () => {
             .stat-divider { display: none; }
             .stat-item { width: 45%; }
             .mobile-pad-top { padding-top: 2rem; } /* Reduce top padding on mobile */
+        }
+        
+        @media (max-width: 600px) {
+             .testimonial-card, .glass-card {
+                 padding: 1.5rem !important;
+             }
         }
       `}</style>
     </div>

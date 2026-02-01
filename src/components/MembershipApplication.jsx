@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 import { handlePayment } from '../utils/payment';
 import { ref, update } from 'firebase/database';
 import { db } from '../firebase';
@@ -11,8 +12,9 @@ import { sendMembershipEmail } from '../utils/emailService';
 
 const MembershipApplication = () => {
     const { currentUser, userData, fetchUserData } = useAuth();
-    const [membershipType, setMembershipType] = useState('student');
-    const [professionalRole, setProfessionalRole] = useState('faculty'); // 'faculty' or 'industry'
+    const location = useLocation();
+    const [membershipType, setMembershipType] = useState(userData?.membershipType || location.state?.selectedType || 'student');
+    const [professionalRole, setProfessionalRole] = useState(userData?.professionalRole || 'faculty'); // 'faculty' or 'industry'
     const [uploadError, setUploadError] = useState('');
     const [success, setSuccess] = useState('');
     const [status, setStatus] = useState(''); // General status for form feedback
@@ -99,6 +101,11 @@ const MembershipApplication = () => {
         setLogs(prev => [...prev, msg + ' (' + new Date().toLocaleTimeString() + ')']);
     };
 
+    // Default to 'paid' if user is already on free tier (Upgrade mode)
+    const [membershipTier, setMembershipTier] = useState(userData?.tier === 'free' ? 'paid' : 'free');
+
+    // ... (rest of the component)
+
     const handleApply = async () => {
         setLoading(true);
         setStatus('');
@@ -126,7 +133,20 @@ const MembershipApplication = () => {
 
             const details = {};
             if (membershipType === 'student') {
-                Object.assign(details, { institution: formData.institution, branch: formData.branch, year: formData.year });
+                const finalPhotoUrl = uploadedPhotoUrl || '';
+                Object.assign(details, {
+                    institution: formData.institution,
+                    branch: formData.branch,
+                    year: formData.year,
+                    // Additional fields for Resource Network Visibility
+                    photoUrl: finalPhotoUrl,
+                    name: userData?.name || currentUser.displayName || 'Member',
+                    location: formData.location,
+                    expertise: formData.expertise,
+                    bio: formData.bio || `Student at ${formData.institution}`,
+                    designation: 'Student Member', // For card display
+                    organization: formData.institution // For card display
+                });
             } else if (membershipType === 'professional') {
                 const finalPhotoUrl = uploadedPhotoUrl || '';
                 Object.assign(details, {
@@ -149,44 +169,65 @@ const MembershipApplication = () => {
                 });
             }
 
-            // Determine Fee
+            // Determine Fee & Logic
             let fee = 0;
-            switch (membershipType) {
-                case 'student': fee = 1.5; break;
-                case 'professional': fee = 10; break;
-                case 'institutional': fee = 1000; break;
-                default: fee = 1000;
+            // Institutional is always paid for now? Or keep it simple.
+            // Assumption: Institutional is always paid (1000). Student/Professional have tiers.
+            const isFree = membershipType !== 'institutional' && membershipTier === 'free';
+
+            if (!isFree) {
+                switch (membershipType) {
+                    case 'student': fee = 99; break;
+                    case 'professional': fee = 999; break;
+                    case 'institutional': fee = 1000; break;
+                    default: fee = 1000;
+                }
             }
 
-            addLog("Starting payment flow for " + membershipType + " with fee: " + fee);
+            addLog("Starting application for " + membershipType + " (" + (isFree ? 'Free' : 'Paid') + ") with fee: " + fee);
 
-            const paymentPromise = handlePayment(
-                userData?.name || currentUser.email,
-                currentUser.email,
-                userData?.phone || "",
-                fee,
-                async (paymentId) => {
-                    addLog("Payment Success Callback");
-                    try {
-                        await updateMembershipInDB(membershipType, 'active', paymentId, details);
-                        setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership Activated Successfully!`);
-                        await fetchUserData(); // Refresh dashboard state
-                    } catch (error) {
-                        setStatus('Payment successful but DB update failed: ' + error.message);
-                    }
+            if (isFree) {
+                // DIRECT ACTIVATION FOR FREE TIER
+                try {
+                    const finalTier = 'free';
+                    // For free tier, paymentId is 'N/A' or 'FREE'
+                    await updateMembershipInDB(membershipType, 'active', 'FREE_TIER', details, finalTier);
+                    setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership (Free) Activated Successfully!`);
+                    await fetchUserData();
+                } catch (error) {
+                    setStatus('Activation failed: ' + error.message);
                 }
-            );
+            } else {
+                // PAID FLOW
+                const paymentPromise = handlePayment(
+                    userData?.name || currentUser.email,
+                    currentUser.email,
+                    userData?.phone || "",
+                    fee,
+                    async (paymentId) => {
+                        addLog("Payment Success Callback");
+                        try {
+                            const finalTier = 'paid';
+                            await updateMembershipInDB(membershipType, 'active', paymentId, details, finalTier);
+                            setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership Activated Successfully!`);
+                            await fetchUserData(); // Refresh dashboard state
+                        } catch (error) {
+                            setStatus('Payment successful but DB update failed: ' + error.message);
+                        }
+                    }
+                );
 
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => {
-                    addLog("Timeout triggered");
-                    reject(new Error("Payment initialization timed out."));
-                }, 15000)
-            );
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => {
+                        addLog("Timeout triggered");
+                        reject(new Error("Payment initialization timed out."));
+                    }, 15000)
+                );
 
-            addLog("Awaiting race");
-            await Promise.race([paymentPromise, timeoutPromise]);
-            addLog("Race completed");
+                addLog("Awaiting race");
+                await Promise.race([paymentPromise, timeoutPromise]);
+                addLog("Race completed");
+            }
 
         } catch (error) {
             addLog("Error caught: " + error.message);
@@ -205,11 +246,13 @@ const MembershipApplication = () => {
         setLoading(false);
     }
 
-    const updateMembershipInDB = async (type, status, paymentId, details) => {
+    const updateMembershipInDB = async (type, status, paymentId, details, tier = 'paid') => {
         // ... (keep existing) ...
         const updates = {};
         updates['/users/' + currentUser.uid + '/membershipStatus'] = status;
         updates['/users/' + currentUser.uid + '/membershipType'] = type;
+        updates['/users/' + currentUser.uid + '/tier'] = tier; // NEW FIELD
+
         if (type === 'professional' && details.roleType) {
             updates['/users/' + currentUser.uid + '/professionalRole'] = details.roleType;
         }
@@ -223,6 +266,7 @@ const MembershipApplication = () => {
         updates['/memberships/' + currentUser.uid] = {
             type,
             status,
+            tier,
             paymentId,
             details,
             appliedAt: new Date().toISOString()
@@ -240,13 +284,39 @@ const MembershipApplication = () => {
                 <select
                     value={membershipType}
                     onChange={(e) => setMembershipType(e.target.value)}
-                    className="form-control"
+                    className="form-control mb-3"
                     style={{ maxWidth: '300px', display: 'inline-block' }}
+                    disabled={!!userData?.membershipType}
                 >
-                    <option value="student">Student Learner (Launch Offer: ₹1.5)</option>
-                    <option value="professional">Professional Network (Launch Offer: ₹10)</option>
+                    <option value="student">Student Learner</option>
+                    <option value="professional">Professional Network</option>
                     <option value="institutional">Campus Partner (₹1,000)</option>
                 </select>
+
+                {membershipType !== 'institutional' && (
+                    <div className="tier-selector mb-4 p-3 bg-white border rounded">
+                        <label className="block mb-2 font-semibold">Select Plan Tier:</label>
+                        <div className="radio-group">
+                            <label className={`radio-btn ${membershipTier === 'free' ? 'active' : ''}`}>
+                                <input type="radio" checked={membershipTier === 'free'} onChange={() => setMembershipTier('free')} disabled={userData?.tier === 'free'} />
+                                <div>
+                                    <div className="font-bold">Free Tier {userData?.tier === 'free' && '(Current Plan)'}</div>
+                                    <div className="text-xs text-gray-500">Basic Visibility (Limited Access to Network)</div>
+                                </div>
+                            </label>
+                            <label className={`radio-btn ${membershipTier === 'paid' ? 'active' : ''}`}>
+                                <input type="radio" checked={membershipTier === 'paid'} onChange={() => setMembershipTier('paid')} />
+                                <div>
+                                    <div className="font-bold">
+                                        Paid Tier {membershipType === 'student' ? '(₹99)' : '(₹999)'}
+                                        {userData?.tier === 'free' && <span className="text-success ml-1">(Upgrade)</span>}
+                                    </div>
+                                    <div className="text-xs text-gray-500">Full Visibility & Listed in Resource Network</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="info-box mt-3 mb-3">
@@ -270,6 +340,23 @@ const MembershipApplication = () => {
                                 <option>4th Year</option>
                                 <option>Post Graduate</option>
                             </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Areas of Interest / Expertise (for Network)</label>
+                            <input type="text" name="expertise" className="form-control" value={formData.expertise} onChange={handleInputChange} placeholder="e.g. Web Dev, AI, Robotics" />
+                        </div>
+                        <div className="form-group">
+                            <label>City / Location</label>
+                            <input type="text" name="location" className="form-control" value={formData.location} onChange={handleInputChange} placeholder="e.g. Chennai" />
+                        </div>
+                        <div className="form-group">
+                            <label>Short Bio (Optional)</label>
+                            <textarea name="bio" className="form-control" rows="2" value={formData.bio} onChange={handleInputChange} placeholder="Brief introduction..." />
+                        </div>
+                        <div className="form-group">
+                            <label>Profile Photo</label>
+                            <input type="file" className="form-control" onChange={onFileChange} accept="image/*" />
+                            {uploadedPhotoUrl && <p className="text-success text-sm mt-1">Photo uploaded successfully!</p>}
                         </div>
                     </div>
                 )}
@@ -440,14 +527,14 @@ const MembershipApplication = () => {
                 disabled={loading}
                 className="btn btn-primary mt-2"
             >
-                {loading ? 'Processing...' : (membershipType === 'student' ? 'Pay ₹1.5 & Apply' : `Pay ₹${membershipType === 'institutional' ? '1,000' : '10'} & Apply`)}
+                {loading ? 'Processing...' : (
+                    (membershipType === 'institutional')
+                        ? 'Pay ₹1,000 & Apply'
+                        : (membershipTier === 'free' ? 'Apply for Free' : `Pay ₹${membershipType === 'student' ? '99' : '999'} & ${userData?.tier === 'free' ? 'Upgrade' : 'Apply'}`)
+                )}
             </button>
 
             {status && <div className="alert mt-3" style={{ background: status.includes('Error') ? '#fed7d7' : '#e6fffa', color: status.includes('Error') ? '#c53030' : '#008080', padding: '1rem', borderRadius: '4px' }}>{status}</div>}
-
-            <div id="debug-console" style={{ marginTop: '20px', padding: '10px', background: '#eee', border: '1px solid #999', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
-                Debug Console:
-            </div>
 
             <style jsx="true">{`
                 .details-form {

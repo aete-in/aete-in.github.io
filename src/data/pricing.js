@@ -2,14 +2,14 @@ export const PRICING_PLANS = [
   {
     role: "Student",
     title: "Student Learner Pass",
-    subtitle: "LIFETIME LEARNING ACCESS",
-    price: "99% OFF", // Visual Big Display
-    originalPrice: "₹150 + GST", // Visual Strikethrough
-    numericPrice: 1.5,
-    description: "For engineering students keen on upgrading skills and innovation. Access to student study groups and competitions.",
+    subtitle: "FREE TIER AVAILABLE",
+    price: "₹99",
+    originalPrice: null,
+    numericPrice: 99,
+    description: "For engineering students. Start for Free or upgrade for ₹99 to get certified access.",
     features: [
-      "Access to Resource Persons Network",
-      "Certified Student Learner Credential",
+      "Access to Resource Persons Network (Basic / Full when Paid)",
+      "Certified Student Learner Credential (Paid Only)",
       "Discounts on workshops & hackathons",
       "Access to Technical Study Groups"
     ],
@@ -18,21 +18,21 @@ export const PRICING_PLANS = [
       color: "var(--color-primary)",
       iconName: "User",
       period: "Lifetime",
-      isOffer: true
+      isOffer: false
     }
   },
   {
     role: "Professional",
     title: "Professional Network Pass",
-    subtitle: "LIFETIME NETWORK ACCESS",
-    price: "99% OFF",
-    originalPrice: "₹1,000 + GST",
-    numericPrice: 10,
-    description: "For Faculty, Academicians, and Industry Professionals. Unlocks unlimited access to the Resource Persons Network.",
+    subtitle: "FREE TIER AVAILABLE",
+    price: "₹999",
+    originalPrice: null,
+    numericPrice: 999,
+    description: "For Faculty & Industry Professionals. Join for Free or pay ₹999 for full network visibility.",
     features: [
-      "Access to Resource Persons Network",
-      "Professional Competence Certificate",
-      "Priority Access to Advisory Board Meetings",
+      "Access to Resource Persons Network (Basic / Full when Paid)",
+      "Professional Competence Certificate (Paid Only)",
+      "Priority Access to Advisory Board Meetings (Paid Only)",
       "Eligibility for Senior Mentor Certification"
     ],
     buttonText: "Get Network Pass",
@@ -40,7 +40,7 @@ export const PRICING_PLANS = [
       color: "var(--color-secondary)",
       iconName: "Briefcase",
       period: "Lifetime",
-      isOffer: true
+      isOffer: false
     }
   },
   {

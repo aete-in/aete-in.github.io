@@ -20,7 +20,7 @@ const SEO = ({ title, description }) => {
         }
 
         // Scroll to top on route change
-        window.scrollTo(0, 0);
+
     }, [title, description, location]);
 
     return null;

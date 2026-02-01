@@ -224,9 +224,12 @@ const CertificateGenerator = ({ userData, onClose }) => {
                                     of the society, an organisation for promoting<br/>the quality and standards in technical education
                                 </p>
 
-                                <div class="sign-box">
                                     <img src="${window.location.origin}/signature_cert.png" class="sign-img" alt="Signature" />
                                     <div class="sign-line">Executive Secretary</div>
+                                </div>
+
+                                <div style="position: absolute; bottom: 10px; width: 100%; text-align: center; color: #1a365d; font-size: 14px; font-weight: 600; letter-spacing: 1px;">
+                                    www.aete.in
                                 </div>
                             </div>
                         </div>

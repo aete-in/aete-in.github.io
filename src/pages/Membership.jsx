@@ -6,74 +6,32 @@ import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import PageHero from '../components/PageHero';
 
-import { handlePayment } from '../utils/payment';
-import { db } from '../firebase';
-import { ref, update, runTransaction } from 'firebase/database';
-
 const Membership = () => {
   const navigate = useNavigate();
-  const { currentUser, userData, fetchUserData } = useAuth();
+  const { currentUser, userData } = useAuth();
 
-  const handleApply = (member) => {
-    if (!currentUser) {
-      // Redirect to login, preserving the intent to apply for this specific membership
-      navigate('/login', { state: { from: '/membership' } });
-      return;
-    }
+  const handleApply = (member, isUpgrade = false) => {
+    // Navigate to Dashboard (where Application Form lives)
+    // Pass selectedType in state so the form pre-selects it
+    // Logic: 
+    // If logged in -> Go to /dashboard
+    // If NOT logged in -> Go to /login, with 'from' set to /dashboard (and state preserved if possible, or just default to dashboard)
 
-    // Trigger Razorpay Payment
-    handlePayment(
-      currentUser.displayName || currentUser.email,
-      currentUser.email,
-      userData?.phone || currentUser.phoneNumber || "", // Prioritize database phone, then auth phone
-      member.numericPrice,
-      member.title, // Product Description
-      async (paymentId) => {
-        // On Success
-        console.log("Payment Successful:", paymentId);
-
-        // Update DB
-        try {
-          // Generate Membership ID atomically
-          const counterRef = ref(db, 'counters/membershipId');
-          let newMembershipId = "PENDING";
-
-          await runTransaction(counterRef, (currentValue) => {
-            return (currentValue || 200) + 1; // Start from 200 -> First ID 201
-          })
-            .then((result) => {
-              if (result.committed) {
-                const count = result.snapshot.val();
-                // Format: LM + 4 digits (e.g., LM0201)
-                newMembershipId = `LM${String(count).padStart(4, '0')}`;
-              }
-            });
-
-          const userRef = ref(db, 'users/' + currentUser.uid);
-          await update(userRef, {
-            membershipStatus: 'active',
-            membershipType: member.type,
-            membershipId: newMembershipId,
-            lastPaymentId: paymentId,
-            membershipDate: new Date().toISOString()
-          });
-
-          // Refresh local state
-          await fetchUserData();
-
-          navigate('/dashboard', {
-            state: {
-              paymentSuccess: true,
-              paymentId: paymentId,
-              membershipType: member.type
-            }
-          });
-        } catch (error) {
-          console.error("Failed to update membership:", error);
-          alert("Payment successful but failed to update profile. Please contact support.");
+    if (currentUser) {
+      navigate('/dashboard', { state: { selectedType: member.role.toLowerCase(), upgradeMode: isUpgrade } });
+    } else {
+      // Authenticated redirect flow
+      navigate('/login', {
+        state: {
+          from: '/dashboard',
+          selectedType: member.role.toLowerCase(),
+          upgradeMode: isUpgrade
+          // If login page doesn't forward state, user lands on dashboard default tabs. 
+          // Enhanced Experience: We could pass it in URL query param? 
+          // kept simple for now. 
         }
-      }
-    );
+      });
+    }
   };
 
   const containerVariants = {
@@ -193,10 +151,20 @@ const Membership = () => {
                 ))}
               </ul>
 
-              {userData?.membershipType === plan.role.toLowerCase() || (userData?.membershipType === 'professional' && plan.role === 'Professional') ? (
-                <button disabled className="btn btn-sm btn-success" style={{ borderColor: 'transparent', background: '#dcfce7', color: '#166534' }}>
-                  Active Plan
-                </button>
+              {/* Logic: Show Active if type matches AND (tier is not free OR it's institutional). 
+                  If type matches AND tier is free, show Upgrade. 
+                  If type doesn't match, show Apply/Join button. 
+              */}
+              {(userData?.membershipType === plan.role.toLowerCase() || (userData?.membershipType === 'professional' && plan.role === 'Professional')) ? (
+                (userData?.tier === 'free' && plan.role !== 'Institutional Partner') ? (
+                  <button onClick={() => handleApply({ ...plan, ...plan.ui, type: plan.role }, true)} className="btn btn-sm btn-primary" style={{ backgroundColor: '#c05621', borderColor: '#c05621', color: 'white' }}>
+                    Upgrade Plan
+                  </button>
+                ) : (
+                  <button disabled className="btn btn-sm btn-success" style={{ borderColor: 'transparent', background: '#dcfce7', color: '#166534' }}>
+                    Active Plan
+                  </button>
+                )
               ) : (
                 <button onClick={() => handleApply({ ...plan, ...plan.ui, type: plan.role })} className="btn btn-sm btn-outline-primary" style={{ borderColor: plan.ui.color, color: plan.ui.color }}>
                   {plan.buttonText}

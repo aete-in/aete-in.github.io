@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Edit } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -10,15 +10,22 @@ import CertificateGenerator from '../components/CertificateGenerator';
 const Dashboard = () => {
     const { currentUser, userData, logout, resendVerification, fetchUserData } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [verificationSent, setVerificationSent] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showCertificate, setShowCertificate] = useState(false);
+    const [showUpgrade, setShowUpgrade] = useState(false);
 
     useEffect(() => {
+        // Reset scroll position on mount/navigation
+        window.scrollTo(0, 0);
+
         if (!currentUser) {
             navigate('/login');
+        } else if (location.state?.upgradeMode) {
+            setShowUpgrade(true);
         }
-    }, [currentUser, navigate]);
+    }, [currentUser, navigate, location]);
 
     if (!currentUser) return <Navigate to="/login" replace />;
 
@@ -83,20 +90,56 @@ const Dashboard = () => {
                     {userData?.membershipType && <p>Type: <strong style={{ textTransform: 'capitalize' }}>{userData?.membershipType}</strong></p>}
                     {userData?.membershipId && <p>Membership ID: <strong style={{ color: 'var(--color-primary)' }}>{userData?.membershipId}</strong></p>}
 
-                    {(userData?.membershipStatus === 'none' || !userData?.membershipStatus) && (
-                        <MembershipApplication />
+                    {/* Free Tier Upgrade Option */}
+                    {userData?.membershipStatus === 'active' && userData?.tier === 'free' && !showUpgrade && (
+                        <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                            <h4 className="text-orange-800 font-semibold mb-2">Upgrade to Paid Membership</h4>
+                            <p className="text-sm text-orange-700 mb-4">
+                                Get a verified certificate, full access to the Resource Network, and more benefits.
+                            </p>
+                            <button
+                                onClick={() => setShowUpgrade(true)}
+                                className="btn btn-primary"
+                                style={{ background: '#c05621', color: 'white', width: '100%', justifyContent: 'center' }}
+                            >
+                                Upgrade Now
+                            </button>
+                        </div>
+                    )}
+
+                    {(userData?.membershipStatus === 'none' || !userData?.membershipStatus || showUpgrade) && (
+                        <div className={showUpgrade ? "mt-6 border-t pt-6" : ""}>
+                            {showUpgrade && (
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3>Upgrade Membership</h3>
+                                    <button onClick={() => setShowUpgrade(false)} className="text-gray-500 hover:text-gray-700">Cancel</button>
+                                </div>
+                            )}
+                            <MembershipApplication />
+                        </div>
                     )}
 
                     {userData?.membershipStatus === 'active' && (
                         <div style={{ marginTop: '1.5rem' }}>
-                            <button
-                                onClick={() => setShowCertificate(true)}
-                                className="btn btn-outline"
-                                style={{ width: '100%', justifyContent: 'center' }}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                                Download Certificate
-                            </button>
+                            {userData?.tier !== 'free' ? (
+                                <button
+                                    onClick={() => setShowCertificate(true)}
+                                    className="btn btn-outline"
+                                    style={{ width: '100%', justifyContent: 'center' }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                    Download Certificate
+                                </button>
+                            ) : (
+                                <button
+                                    disabled
+                                    className="btn"
+                                    style={{ width: '100%', justifyContent: 'center', background: '#e2e8f0', color: '#718096', border: '1px solid #cbd5e0', cursor: 'not-allowed' }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    Certificate Locked (Upgrade)
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

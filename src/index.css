@@ -44,8 +44,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
-  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -55,7 +55,9 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
 #root {
@@ -87,13 +89,13 @@ h6 {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--spacing-md);
+  padding: 0 2rem; /* Increased from 1rem for better breathing room */
 }
 
 @media (max-width: 640px) {
   html body .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: 1rem; /* Standardized mobile padding */
+    padding-right: 1rem;
   }
 }
 
