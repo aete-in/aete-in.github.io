@@ -14,7 +14,13 @@ const firebaseConfig = {
 };
 
 // Check if config is likely valid
-const isConfigValid = firebaseConfig.apiKey && firebaseConfig.apiKey !== 'your_api_key_here';
+const requiredKeys = [
+    'apiKey', 'authDomain', 'databaseURL', 'projectId',
+    'storageBucket', 'messagingSenderId', 'appId'
+];
+const missingKeys = requiredKeys.filter(key => !firebaseConfig[key] || firebaseConfig[key] === 'your_' + key.replace(/([A-Z])/g, '_$1').toLowerCase() + '_here');
+
+const isConfigValid = missingKeys.length === 0;
 
 let app;
 let auth = null;
@@ -31,9 +37,11 @@ if (isConfigValid) {
         initializationError = new Error("Failed to initialize Firebase: " + error.message);
     }
 } else {
+    console.error("Firebase Configuration Missing. Missing Keys:", missingKeys);
+    console.log("Current Config State:", Object.fromEntries(Object.entries(firebaseConfig).map(([k, v]) => [k, v ? 'SET' : 'MISSING'])));
     // We do NOT throw here to avoid crashing the module loader.
     // Instead we record the error to throw inside the React Component.
-    initializationError = new Error("Firebase Configuration Missing. Please check your .env file.");
+    initializationError = new Error(`Firebase Configuration Missing. Missing keys: ${missingKeys.join(', ')}. Please check your .env file and GitHub Secrets.`);
 }
 
 const storage = app ? getStorage(app) : null;
