@@ -64,7 +64,7 @@ const Home = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                AETE® connects institutions with experienced engineers and educators through its structured Resource Person Network.
+                AETE® facilitates knowledge transfer by providing institutions with access to experienced subject matter experts and academic leaders for Faculty Development and technical training.
               </motion.p>
 
               <motion.div
@@ -245,8 +245,8 @@ const Home = () => {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="container center-text">
-          <h2>Ready to Transform Engineering?</h2>
-          <p>Join India's fastest growing network of engineering professionals.</p>
+          <h2>Ready to Transform Engineering Education?</h2>
+          <p>Join India's premier professional association of engineering educators.</p>
           <div className="cta-buttons">
             <Link to="/contact" className="btn btn-white">Partner with Us</Link>
             <Link to="/membership" className="btn btn-outline-white">Get Certified</Link>
@@ -469,36 +469,41 @@ const Home = () => {
         
         @media (max-width: 960px) {
             .landing-wrapper {
-                height: calc(100dvh - 85px); /* Subtract Nav Height */
-                overflow: hidden;
-                /* Ensure stats stay at bottom even if content is small */
-                justify-content: flex-end; 
+                min-height: calc(100dvh - 85px); /* Changed from fixed height to min-height */
+                height: auto; /* Allow growth */
+                overflow-y: auto; /* Enable scroll if needed */
+                overflow-x: hidden;
+                justify-content: flex-start; /* Start from top */
+                padding-bottom: 80px; /* Space for stats dock */
             }
 
             .hero-content-wrapper {
-                /* Center content in remaining space */
-                flex: 1 1 auto;
-                justify-content: center; 
-                padding: 0 1rem;
-                padding-bottom: 0.5rem;
+                flex: 0 0 auto;
+                padding-top: 2rem;
+                padding-bottom: 2rem;
             }
 
             .hero-grid {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                gap: 2.5rem; /* Increased gap */
-                text-align: center;
-                height: auto;
-                padding-top: 3rem; /* More top padding */
+                gap: 2rem;
+                padding-top: 1rem;
             }
 
-            .hero-visual-area { 
-                display: flex; 
-                height: 240px; /* Reduced container height */
+            /* Fix Stats Dock to be fixed at bottom or relative? 
+               Let's make it fixed at bottom for consistency, or relative if content is long.
+               For "Fit Hero", fixed is better. */
+            .stats-dock {
+                position: fixed;
+                bottom: 0;
+                left: 0;
                 width: 100%;
-                order: -1; 
-                margin-bottom: 0.5rem;
+                z-index: 50;
+                padding: 1rem 0;
+            }
+            /* Add buffer to body or wrapper so content isn't hidden behind fixed dock */
+            
+            .hero-visual-area { 
+                height: 220px;
+                margin-bottom: 1rem;
             }
 
             .orbital-system {

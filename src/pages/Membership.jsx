@@ -63,7 +63,7 @@ const Membership = () => {
     <div className="membership-page">
       <SEO title="Membership" description="Join AETE as a Student, Professional, or Institutional Partner." />
       <PageHero
-        title="Professional Engineering Network"
+        title="Professional Engineering Association"
         subtitle="Join a collaborative community of engineers and educators."
       />
 
@@ -71,7 +71,7 @@ const Membership = () => {
         <div className="intro-text center">
           <p>
             Joining the AETE Community is a statement of professional commitment. Join a distinguished cadre of engineers and educators
-            dedicated to shaping the future of technology. Gain recognition, influence curricula, and access an exclusive network of peers.
+            dedicated to shaping the future of technology. Gain recognition, influence curricula, and access an exclusive community of scholars.
           </p>
         </div>
 
@@ -132,7 +132,7 @@ const Membership = () => {
                 {plan.features.map((benefit, i) => (
                   <li
                     key={i}
-                    style={benefit.includes("Resource Persons Network") ? { fontWeight: '700', color: plan.ui.color } : {}}
+                    style={benefit.includes("Academic Resource Pool") ? { fontWeight: '700', color: plan.ui.color } : {}}
                   >
                     <svg
                       className="check-icon"
@@ -142,7 +142,7 @@ const Membership = () => {
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      style={benefit.includes("Resource Persons Network") ? { color: plan.ui.color } : {}}
+                      style={benefit.includes("Academic Resource Pool") ? { color: plan.ui.color } : {}}
                     >
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
@@ -275,7 +275,7 @@ const Membership = () => {
 
         .membership-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 2rem;
           justify-content: center;
         }
@@ -340,6 +340,10 @@ const Membership = () => {
           margin-bottom: 1rem;
           font-size: 1.35rem;
           font-weight: 700;
+          min-height: 3.5rem; /* Force 2-line height alignment */
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .member-card p {
@@ -347,7 +351,10 @@ const Membership = () => {
           margin-bottom: 2rem;
           font-size: 0.95rem;
           line-height: 1.6;
-          min-height: 50px; /* Force consistent height */
+          min-height: 80px; /* Increased to accommodate longer text safely */
+          display: flex;
+          align-items: center; /* Center text vertically if short */
+          justify-content: center;
         }
 
         .benefits-list {

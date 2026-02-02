@@ -85,8 +85,6 @@ const Contact = () => {
 
             <style jsx="true">{`
                 .grid-2 {
-
-                .grid-2 {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 4rem;

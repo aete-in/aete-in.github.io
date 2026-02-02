@@ -27,7 +27,7 @@ const Footer = () => {
             <h4 className="footer-heading">Quick Links</h4>
             <ul>
               <li><Link to="/about">About Us</Link></li>
-              <li><Link to="/resource-persons">Resource Network</Link></li>
+              <li><Link to="/academic-pool">Academic Pool</Link></li>
               <li><Link to="/verify">Verify Credentials</Link></li>
               <li><Link to="/membership">Plans</Link></li>
               <li><Link to="/programs">Programs</Link></li>
@@ -73,6 +73,11 @@ const Footer = () => {
             <Link to="/disclaimer">Legal Disclaimer</Link>
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms of Service</Link>
+            <Link to="/refund-policy">Refund Policy</Link>
+            <Link to="/usage-policy">Usage Policy</Link>
+          </div>
+          <div style={{ width: '100%', textAlign: 'center', marginTop: '1rem', fontSize: '0.8rem', color: '#64748b' }}>
+            Association of Engineers (AETE) is a Not-for-Profit Educational Association.
           </div>
         </div>
       </div>

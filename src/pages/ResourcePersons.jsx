@@ -20,9 +20,9 @@ const ResourcePersons = () => {
 
     return (
         <div className="resource-persons-page">
-            <SEO title="Resource Persons Network" description="Join AETE's elite network of industry experts and academic leaders." />
+            <SEO title="Academic Resource Pool" description="Join AETE's elite directory of industry experts and academic leaders." />
             <PageHero
-                title="Resource Persons Network"
+                title="Academic Resource Pool"
                 subtitle="Bridging the gap between theory and practice through expert mentorship."
             />
 
@@ -35,7 +35,7 @@ const ResourcePersons = () => {
                     >
                         <h2>Empowering Education with Expertise</h2>
                         <p className="lead-text">
-                            The AETE Resource Persons Network is a **voluntary directory** of professionals willing to serve as resource persons.
+                            The AETE Academic Resource Pool is a <strong>voluntary directory</strong> of professionals willing to serve as resource persons.
                             Experts include engineers, faculty members, industry professionals, and researchers who have voluntarily listed themselves to facilitate knowledge sharing.
                         </p>
                         <div className="highlight-disclaimer">
@@ -75,7 +75,7 @@ const ResourcePersons = () => {
                             <GraduationCap size={32} />
                         </div>
                         <h3>For Professionals</h3>
-                        <p>Share your knowledge, build your personal brand, and contribute to the next generation of engineers while networking with peers.</p>
+                        <p>Share your knowledge, build your personal brand, and contribute to the next generation of engineers while collaborating with peers.</p>
                     </motion.div>
                 </motion.div>
 
@@ -101,7 +101,7 @@ const ResourcePersons = () => {
                             Connect directly, view profiles, and request mentorship.
                         </p>
                         <div className="btn-group">
-                            <Link to="/resource-network" className="btn btn-primary">Access Network</Link>
+                            <Link to="/academic-pool" className="btn btn-primary">Access Directory</Link>
                             <span className="sub-text">Requires Login</span>
                         </div>
                     </div>
@@ -109,7 +109,7 @@ const ResourcePersons = () => {
                     <div className="cta-card join-network">
                         <h3>Join as an Expert</h3>
                         <p>
-                            Are you an industry professional or senior academician? Join our network to share your expertise and impact engineering education.
+                            Are you an industry professional or senior academician? Join our pool of experts to share your knowledge and impact engineering education.
                         </p>
                         <Link to="/membership" className="btn btn-outline">Apply for Membership</Link>
                     </div>

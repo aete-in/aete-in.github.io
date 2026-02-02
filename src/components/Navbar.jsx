@@ -28,7 +28,7 @@ const Navbar = () => {
     { name: 'Programs', path: '/programs' },
     { name: 'Plans', path: '/membership' },
     { name: 'Clubs', path: '/campus-clubs' },
-    { name: 'Resource Persons', path: '/resource-persons' },
+    { name: 'Academic Pool', path: '/resource-persons' },
   ];
 
   return (
@@ -42,8 +42,10 @@ const Navbar = () => {
         <div className="desktop-menu">
           {navLinks.map((link) => {
             let path = link.path;
-            if (link.name === 'Resource Persons' && (userData?.membershipType === 'professional' || userData?.membershipType === 'institutional')) {
-              path = '/resource-network';
+            if (link.name === 'Academic Pool') {
+              if (userData?.membershipType === 'professional' || userData?.membershipType === 'institution') {
+                path = '/academic-pool';
+              }
             }
             return (
               <NavLink
@@ -93,8 +95,8 @@ const Navbar = () => {
             >
               {navLinks.map((link) => {
                 let path = link.path;
-                if (link.name === 'Resource Persons' && (userData?.membershipType === 'professional' || userData?.membershipType === 'institutional')) {
-                  path = '/resource-network';
+                if (link.name === 'Academic Pool' && (userData?.membershipType === 'professional' || userData?.membershipType === 'institutional')) {
+                  path = '/academic-pool';
                 }
                 return (
                   <NavLink
@@ -224,6 +226,7 @@ const Navbar = () => {
           width: 100%;
           background: var(--color-primary);
           overflow: hidden;
+          display: flex; /* Added display: flex to make flex-direction work */
           flex-direction: column;
           padding: 0 1rem;
         }

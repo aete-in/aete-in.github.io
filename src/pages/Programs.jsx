@@ -46,7 +46,7 @@ const Programs = () => {
     {
       title: "Technical Events",
       icon: <Award size={32} />,
-      desc: "National and institutional level events providing a platform for technical showcase and networking."
+      desc: "National and institutional level events providing a platform for technical showcase and collaboration."
     },
     {
       title: "Expert Talks",
@@ -91,7 +91,7 @@ const Programs = () => {
       <style jsx="true">{`
         .programs-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 2rem;
         }
 

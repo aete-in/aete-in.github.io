@@ -26,6 +26,11 @@
 }
 
 @media (max-width: 768px) {
+    .page-header {
+        padding: 6rem 0 3rem;
+        /* Reduced padding for mobile */
+    }
+
     .header-title {
         font-size: 2.25rem;
     }

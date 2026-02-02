@@ -10,7 +10,7 @@ import { ref, onValue } from 'firebase/database';
 import { getSmartSummary } from '../utils/smartSummary';
 import ResourceMap from '../components/ResourceMap';
 
-const ResourceNetwork = () => {
+const AcademicPool = () => {
     const { currentUser, userData, loading } = useAuth();
     const navigate = useNavigate();
 
@@ -81,10 +81,10 @@ const ResourceNetwork = () => {
 
     return (
         <div className="resource-network-page">
-            <SEO title="Resource Persons Network" description="Connect with industry experts and academic leaders." />
+            <SEO title="Academic Resource Pool" description="Access industry experts and academic leaders for educational programs." />
             <PageHeader
-                title="Resource Persons Network"
-                subtitle="Connect with a voluntary network of experts and mentors."
+                title="Academic Resource Pool"
+                subtitle="Access a voluntary directory of subject matter experts."
             />
 
             <div className="container section pt-0 mobile-section-adjust">
@@ -99,7 +99,7 @@ const ResourceNetwork = () => {
                             <p>
                                 <strong>Limited View:</strong> You are viewing a restricted list of Resource Persons.
                                 <br className="mobile-break" />
-                                Upgrade to a <strong>Paid Membership</strong> to access the full network.
+                                Upgrade to a <strong>Paid Membership</strong> to access the complete directory.
                             </p>
                         </div>
                         <button className="btn-upgrade" onClick={() => navigate('/membership')}>Upgrade Now</button>
@@ -790,4 +790,4 @@ const ResourceNetwork = () => {
     );
 };
 
-export default ResourceNetwork;
+export default AcademicPool;

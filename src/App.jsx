@@ -8,7 +8,7 @@ import Programs from './pages/Programs';
 import Membership from './pages/Membership';
 import CampusChapters from './pages/CampusChapters';
 import Collaborations from './pages/Collaborations';
-import ResourceNetwork from './pages/ResourceNetwork';
+import AcademicPool from './pages/AcademicPool';
 import ResourcePersons from './pages/ResourcePersons';
 import Certifications from './pages/Certifications';
 import Gallery from './pages/Gallery';
@@ -20,15 +20,20 @@ import Dashboard from './pages/Dashboard';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Disclaimer from './pages/Disclaimer';
+import RefundPolicy from './pages/RefundPolicy';
+import UsagePolicy from './pages/UsagePolicy';
 
 import VerifiedMember from './pages/VerifiedMember';
 
 
 
+import ScrollToTop from './components/ScrollToTop';
+
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -39,7 +44,7 @@ function App() {
             <Route path="campus-clubs" element={<CampusChapters />} />
             <Route path="collaborations" element={<Collaborations />} />
             <Route path="resource-persons" element={<ResourcePersons />} />
-            <Route path="resource-network" element={<ResourceNetwork />} />
+            <Route path="academic-pool" element={<AcademicPool />} />
             <Route path="certifications" element={<Certifications />} />
             <Route path="gallery" element={<Gallery />} />
             <Route path="contact" element={<Contact />} />
@@ -50,6 +55,8 @@ function App() {
             <Route path="privacy" element={<Privacy />} />
             <Route path="terms" element={<Terms />} />
             <Route path="disclaimer" element={<Disclaimer />} />
+            <Route path="refund-policy" element={<RefundPolicy />} />
+            <Route path="usage-policy" element={<UsagePolicy />} />
             <Route path="verify" element={<VerifiedMember />} />
           </Route>
         </Routes>

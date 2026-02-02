@@ -62,10 +62,12 @@ const About = () => {
               <div className="section-label">Who We Are</div>
               <h2 className="section-title">A Community of <br />Innovators & Educators</h2>
               <p className="lead-text">
-                AETE is a premier professional ecosystem for engineers and educators. Managed by Bitsky, we operate as a bridge between industry and academia, dedicated to technical excellence and skill development.
+                AETE is a registered <strong>Educational Professional Association</strong> (MSME Registered). Managed by Bitsky, we operate strictly as an academic body dedicated to technical excellence and faculty development.
               </p>
               <p className="secondary-text">
-                We are dedicated to facilitating professional networking and academic collaboration among engineers and educators. By connecting the classroom with the corporate world, we ensure that education evolves in tandem with technology.
+                We are dedicated to facilitating <strong>educational collaboration</strong> among engineers and educators. Our primary mission is to advance engineering education through FDPs, workshops, and certification programs.
+                <br /><br />
+                <em>Disclaimer: AETE is NOT a networking platform, contact brokerage, or lead generation service.</em>
               </p>
             </div>
             <div className="stats-grid">
@@ -109,7 +111,24 @@ const About = () => {
           </motion.div>
         </div>
 
-
+        {/* Legal Status Section */}
+        <div className="legal-section">
+          <div className="legal-header">
+            <ShieldCheck size={32} className="shield-icon" />
+            <h3>Legal Status & Compliance</h3>
+          </div>
+          <div className="legal-body">
+            <p>
+              <strong>Association of Engineers for Technology and Education (AETE)</strong> is a registered Micro, Small & Medium Enterprise (MSME) under the Government of India.
+            </p>
+            <p>
+              <strong>Nature of Operation:</strong> Professional Association / Educational Trust.
+            </p>
+            <div className="disclaimer-box">
+              <strong>Regulatory Compliance:</strong> AETE complies with all relevant sections of the Indian IT Act 2000 regarding data privacy and content dissemination. We maintain a strict zero-tolerance policy towards commercial solicitation and unauthorized data harvesting on our platform.
+            </div>
+          </div>
+        </div>
 
       </div>
 

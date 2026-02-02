@@ -95,7 +95,7 @@ const Dashboard = () => {
                         <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                             <h4 className="text-orange-800 font-semibold mb-2">Upgrade to Paid Membership</h4>
                             <p className="text-sm text-orange-700 mb-4">
-                                Get a verified certificate, full access to the Resource Network, and more benefits.
+                                Get a verified certificate, full access to the Academic Resource Pool, and more benefits.
                             </p>
                             <button
                                 onClick={() => setShowUpgrade(true)}
@@ -219,9 +219,16 @@ const Dashboard = () => {
                     color: #2f855a;
                     font-weight: 600;
                 }
+                
+                /* Dashboard specific padding override */
+                .dashboard-page {
+                    padding-top: 8rem !important;
+                }
+
                 @media (max-width: 600px) {
                     .dashboard-header { flex-direction: column; align-items: flex-start; }
                     .header-actions { width: 100%; justify-content: flex-end; }
+                    .dashboard-page { padding-top: 6rem !important; }
                 }
             `}</style>
         </div>

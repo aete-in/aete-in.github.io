@@ -27,7 +27,7 @@ const Collaborations = () => {
                         <h2 className="section-title">Our Partners</h2>
                         <p className="mb-4">
                             AETE® collaborates with a diverse range of institutions and organizations to promote technical education and skill development.
-                            Institutions may identify resource persons through the AETE® network and **communicate directly** with experts. Engagement terms are mutually decided; AETE® acts only as a facilitation platform.
+                            Institutions may identify resource persons through the AETE® platform and <strong>coordinate</strong> with experts. Engagement terms are mutually decided; AETE® acts only as a facilitation platform.
                         </p>
 
                         <div className="partner-list">

@@ -284,12 +284,11 @@ const MembershipApplication = () => {
                 <select
                     value={membershipType}
                     onChange={(e) => setMembershipType(e.target.value)}
-                    className="form-control mb-3"
-                    style={{ maxWidth: '300px', display: 'inline-block' }}
+                    className="form-control mb-3 select-max-width"
                     disabled={!!userData?.membershipType}
                 >
                     <option value="student">Student Learner</option>
-                    <option value="professional">Professional Network</option>
+                    <option value="professional">Professional Membership</option>
                     <option value="institutional">Campus Partner (₹1,000)</option>
                 </select>
 
@@ -301,7 +300,7 @@ const MembershipApplication = () => {
                                 <input type="radio" checked={membershipTier === 'free'} onChange={() => setMembershipTier('free')} disabled={userData?.tier === 'free'} />
                                 <div>
                                     <div className="font-bold">Free Tier {userData?.tier === 'free' && '(Current Plan)'}</div>
-                                    <div className="text-xs text-gray-500">Basic Visibility (Limited Access to Network)</div>
+                                    <div className="text-xs text-gray-500">Basic Visibility (Limited Access to Directory)</div>
                                 </div>
                             </label>
                             <label className={`radio-btn ${membershipTier === 'paid' ? 'active' : ''}`}>
@@ -311,7 +310,7 @@ const MembershipApplication = () => {
                                         Paid Tier {membershipType === 'student' ? '(₹99)' : '(₹999)'}
                                         {userData?.tier === 'free' && <span className="text-success ml-1">(Upgrade)</span>}
                                     </div>
-                                    <div className="text-xs text-gray-500">Full Visibility & Listed in Resource Network</div>
+                                    <div className="text-xs text-gray-500">Full Visibility & Listed in Academic Pool</div>
                                 </div>
                             </label>
                         </div>
@@ -342,7 +341,7 @@ const MembershipApplication = () => {
                             </select>
                         </div>
                         <div className="form-group">
-                            <label>Areas of Interest / Expertise (for Network)</label>
+                            <label>Areas of Interest / Expertise (for Directory)</label>
                             <input type="text" name="expertise" className="form-control" value={formData.expertise} onChange={handleInputChange} placeholder="e.g. Web Dev, AI, Robotics" />
                         </div>
                         <div className="form-group">
@@ -620,6 +619,16 @@ const MembershipApplication = () => {
                 .btn-primary:disabled {
                     background-color: #cbd5e0;
                     cursor: not-allowed;
+                }
+                .select-max-width {
+                    max-width: 100%;
+                    width: 100%;
+                    display: block;
+                }
+                @media (min-width: 640px) {
+                    .select-max-width {
+                        max-width: 300px;
+                    }
                 }
             `}</style>
         </div>
