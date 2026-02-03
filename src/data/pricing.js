@@ -35,7 +35,7 @@ export const PRICING_PLANS = [
       "Priority Access to Advisory Board Meetings (Paid Only)",
       "Eligibility for Senior Mentor Certification"
     ],
-    buttonText: "Get Membership Pass",
+    buttonText: "Get Professional Pass",
     ui: {
       color: "var(--color-secondary)",
       iconName: "Briefcase",
@@ -47,9 +47,9 @@ export const PRICING_PLANS = [
     role: "Institution",
     title: "Campus Partner License",
     subtitle: "ANNUAL PARTNERSHIP FEE",
-    price: "₹1,000", // Visual Big Display (No Strikethrough needed)
+    price: "₹9,999", // Visual Big Display (No Strikethrough needed)
     originalPrice: null,
-    numericPrice: 1000,
+    numericPrice: 9999,
     description: "For Engineering Colleges and Universities. Establish innovation cells and gain direct access to expert speakers.",
     features: [
       "Access to Academic Resource Pool",

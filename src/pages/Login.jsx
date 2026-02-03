@@ -9,7 +9,13 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const context = useAuth();
+  console.log('Login Context:', context); // Debugging context availability
+  const { login } = context || {};
+
+  if (!context) {
+    console.error("AuthContext is undefined in Login.jsx! Check Provider.");
+  }
   const navigate = useNavigate();
   const location = useLocation();
 

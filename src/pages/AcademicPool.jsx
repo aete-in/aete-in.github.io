@@ -1,22 +1,44 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Search, Briefcase, MapPin, Award, Lock, User as UserIcon, UserCheck, Mail, Phone, X } from 'lucide-react';
+import { ArrowRight, Search, Briefcase, MapPin, Award, Lock, User as UserIcon, UserCheck, Mail, Phone, X, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 import PageHeader from '../components/PageHeader';
 import { db } from '../firebase';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, update } from 'firebase/database';
 import { getSmartSummary } from '../utils/smartSummary';
 import ResourceMap from '../components/ResourceMap';
 
 const AcademicPool = () => {
-    const { currentUser, userData, loading } = useAuth();
+    const { currentUser, userData, loading, isAdmin } = useAuth();
     const navigate = useNavigate();
 
     const [persons, setPersons] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedPerson, setSelectedPerson] = useState(null);
+
+    // Delete Logic
+    const handleDeleteMember = async (uid) => {
+        if (!uid) return;
+        if (window.confirm("Are you sure you want to delete this member? This action cannot be undone.")) {
+            try {
+                // Delete from /users node
+                // Note: We are setting it to null to delete it
+                const updates = {};
+                updates[`/users/${uid}`] = null;
+                updates[`/memberships/${uid}`] = null;
+
+                await update(ref(db), updates);
+
+                alert("Member deleted successfully.");
+                setSelectedPerson(null);
+            } catch (error) {
+                console.error("Deletion failed:", error);
+                alert("Failed to delete member: " + error.message);
+            }
+        }
+    };
 
     // Filter Logic based on Visibility Rules
     // P1: Paid Profile -> Visible to Everyone
@@ -31,11 +53,18 @@ const AcademicPool = () => {
             const data = snapshot.val();
             if (data) {
                 // Fetch ALL active professionals (free or paid)
-                const loadedPersons = Object.values(data).filter(user => {
+                // Convert object to array but KEEP KEYS (uid)
+                const loadedPersons = Object.entries(data).map(([key, user]) => ({
+                    ...user,
+                    id: key
+                })).filter(user => {
                     // Include:
                     // 1. Professionals (Active)
                     // 2. Paid Students (tier !== 'free') (Active)
                     if (user.membershipStatus !== 'active') return false;
+
+                    // Filter Unverified Emails
+                    if (user.emailVerified !== true) return false;
 
                     const isPaidStudent = user.membershipType === 'student' && user.tier !== 'free';
                     const isProfessional = user.membershipType === 'professional';
@@ -241,6 +270,18 @@ const AcademicPool = () => {
                                             <a href={`tel:${selectedPerson.phone}`} className="btn-full" onClick={(e) => e.stopPropagation()}>
                                                 <Phone size={18} /> Call Now
                                             </a>
+                                        )}
+
+                                        {isAdmin && (
+                                            <button
+                                                className="btn-full btn-delete"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteMember(selectedPerson.id); // Assuming ID is available, wait check
+                                                }}
+                                            >
+                                                <Trash2 size={18} /> Delete Member
+                                            </button>
                                         )}
                                     </div>
                                 </div>
@@ -784,6 +825,13 @@ const AcademicPool = () => {
                     background: #2c5282;
                     transform: translateY(-1px);
                     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
+                .btn-delete {
+                    background: #e53e3e;
+                    margin-top: 1rem;
+                }
+                .btn-delete:hover {
+                    background: #c53030;
                 }
             `}</style>
         </div>

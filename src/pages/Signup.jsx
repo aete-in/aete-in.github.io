@@ -22,6 +22,12 @@ const Signup = () => {
       return setError('Passwords do not match');
     }
 
+    // Phone Validation
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    if (!phoneRegex.test(phone)) {
+      return setError("Please enter a valid phone number (10-15 digits).");
+    }
+
     try {
       setError('');
       setLoading(true);
@@ -66,7 +72,13 @@ const Signup = () => {
                 required
                 className="form-control"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Allow only digits and optional leading +
+                  if (/^\+?[\d]*$/.test(val)) {
+                    setPhone(val);
+                  }
+                }}
               />
             </div>
             <div className="form-group">

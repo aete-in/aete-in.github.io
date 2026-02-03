@@ -22,16 +22,11 @@ const VerifiedMember = () => {
         setHasSearched(true);
 
         try {
-            const usersRef = ref(db, 'users');
-            // Query for the specific membershipId
-            const memberQuery = query(usersRef, orderByChild('membershipId'), equalTo(searchId.trim()));
-            const snapshot = await get(memberQuery);
+            const memberRef = ref(db, `public_memberships/${searchId.trim()}`);
+            const snapshot = await get(memberRef);
 
             if (snapshot.exists()) {
-                // Should only be one, but snapshot returns a map of keys
-                const data = snapshot.val();
-                const key = Object.keys(data)[0];
-                setResult(data[key]);
+                setResult(snapshot.val());
             } else {
                 setResult(null);
             }

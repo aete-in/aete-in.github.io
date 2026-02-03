@@ -56,6 +56,10 @@ const RefundPolicy = () => {
           font-family: 'Inter', sans-serif;
           color: #333;
           line-height: 1.8;
+          background: white;
+          padding: 3rem;
+          border-radius: 12px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
         .last-updated {
             font-size: 0.9rem;
@@ -84,7 +88,7 @@ const RefundPolicy = () => {
         .legal-content li {
           margin-bottom: 0.5rem;
         }
-        a {
+        .legal-content a {
             color: var(--color-primary);
             text-decoration: underline;
         }

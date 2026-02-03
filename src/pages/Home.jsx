@@ -208,7 +208,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials / Trust */}
+      {/* Testimonials / Trust - HIDDEN AS PER REQUEST
       <section className="section">
         <div className="container">
           <div className="center-header">
@@ -241,6 +241,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* CTA Section */}
       <section className="cta-section">

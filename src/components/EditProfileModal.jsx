@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
-import { X, Camera, Save } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Camera, X } from 'lucide-react';
 import { ref, update } from 'firebase/database';
 import { db } from '../firebase';
 import { uploadToCloudinary } from '../utils/cloudinaryService';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
+import LoadingOverlay from './LoadingOverlay';
+import { useAuth } from '../context/AuthContext';
 
 const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) => {
+    const { deleteAccount } = useAuth(); // Destructure
     const [formData, setFormData] = useState({
         name: userData?.name || '',
         phone: userData?.phone || '',
@@ -38,6 +41,12 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
         setLoading(true);
         setError('');
         try {
+            // Phone Validation
+            const phoneRegex = /^\+?[0-9]{10,15}$/;
+            if (formData.phone && !phoneRegex.test(formData.phone)) {
+                return setError("Please enter a valid phone number (10-15 digits).");
+            }
+
             const updates = {};
             // Update fields in /users/{uid}
             Object.keys(formData).forEach(key => {
@@ -88,11 +97,24 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
             const url = await uploadToCloudinary(file);
             setNewPhotoUrl(url);
             setIsCropping(false);
-            setUploadingPhoto(false);
         } catch (e) {
             console.error(e);
             setError("Failed to crop/upload image.");
+        } finally {
             setUploadingPhoto(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm("Are you sure you want to DELETE your account? This action is permanent and cannot be undone.")) {
+            if (window.confirm("FINAL WARNING: All your data will be lost. Proceed?")) {
+                try {
+                    await deleteAccount();
+                    // AuthContext handles cleanup and logout, user will be redirected by Dashboard/App router
+                } catch (error) {
+                    alert("Failed to delete account: " + error.message);
+                }
+            }
         }
     };
 
@@ -129,7 +151,18 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
                         </div>
                         <div className="form-group">
                             <label>Phone</label>
-                            <input name="phone" value={formData.phone} onChange={handleInputChange} className="form-control" />
+                            <input
+                                name="phone"
+                                value={formData.phone}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    // Allow only digits and optional leading +
+                                    if (/^\+?[\d]*$/.test(val)) {
+                                        setFormData({ ...formData, phone: val });
+                                    }
+                                }}
+                                className="form-control"
+                            />
                         </div>
                         <div className="form-group">
                             <label>Organization</label>
@@ -158,10 +191,21 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
                     </div>
                 </div>
 
-                <div className="modal-footer">
+                <div className="btn-group">
                     <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-                    <button onClick={handleSave} className="btn btn-primary" disabled={loading}>
-                        {loading ? 'Saving...' : <><Save size={18} /> Save Changes</>}
+                    <button onClick={handleSave} className="btn btn-primary" disabled={uploading}>
+                        {uploading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                </div>
+
+                <div className="danger-zone mt-8 pt-6 border-t border-red-200">
+                    <h4 className="text-red-700 font-bold text-sm mb-2">Danger Zone</h4>
+                    <button
+                        onClick={handleDeleteAccount}
+                        className="btn btn-danger w-full"
+                        style={{ background: '#fff5f5', color: '#c53030', border: '1px solid #fc8181' }}
+                    >
+                        Delete My Account
                     </button>
                 </div>
             </div>
@@ -267,13 +311,9 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
                 .cropper-header { padding: 1rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
                 .crop-area { position: relative; flex: 1; background: #333; }
                 .controls { padding: 1rem; background: white; }
-                .zoom-range { width: 100%; margin: 1rem 0; }
-                .alert-error { background: #fed7d7; color: #c53030; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
-
-                @media (max-width: 640px) {
-                    .form-grid { grid-template-columns: 1fr; }
-                }
             `}</style>
+
+            {uploadingPhoto && <LoadingOverlay message="Uploading photo..." />}
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom'; // Updated import
 import { handlePayment } from '../utils/payment';
 import { ref, update } from 'firebase/database';
 import { db } from '../firebase';
@@ -9,11 +9,14 @@ import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 import { X } from 'lucide-react'; // For closing modal
 import { sendMembershipEmail } from '../utils/emailService';
+import LoadingOverlay from './LoadingOverlay';
+import { generateMembershipId } from '../utils/idGenerator';
 
 const MembershipApplication = () => {
     const { currentUser, userData, fetchUserData } = useAuth();
     const location = useLocation();
-    const [membershipType, setMembershipType] = useState(userData?.membershipType || location.state?.selectedType || 'student');
+    const navigate = useNavigate(); // Initialize navigate
+    const [membershipType, setMembershipType] = useState(userData?.membershipType || location.state?.selectedType || 'professional');
     const [professionalRole, setProfessionalRole] = useState(userData?.professionalRole || 'faculty'); // 'faculty' or 'industry'
     const [uploadError, setUploadError] = useState('');
     const [success, setSuccess] = useState('');
@@ -69,25 +72,23 @@ const MembershipApplication = () => {
 
     const showCroppedImage = async () => {
         try {
+            setUploadingPhoto(true); // START LOADING
             const croppedImageBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
             const fileName = `cropped_${Date.now()}.jpg`;
             const file = new File([croppedImageBlob], fileName, { type: "image/jpeg" });
-
-            // setCroppedFile(file); // Removed as we upload instantly
-            // setIsCropping(false); // Moved inside uploadToCloudinary success block or handled there if we want to wait. 
-            // actually strict logic: upload first then close.
 
             // Instant Upload
             const url = await uploadToCloudinary(file);
             setUploadedPhotoUrl(url);
 
-            setUploadingPhoto(false);
             setIsCropping(false);
             setSuccess("Photo uploaded successfully!");
             setTimeout(() => setSuccess(''), 3000);
         } catch (e) {
             console.error(e);
             setError("Failed to crop image.");
+        } finally {
+            setUploadingPhoto(false); // STOP LOADING
         }
     };
 
@@ -179,8 +180,8 @@ const MembershipApplication = () => {
                 switch (membershipType) {
                     case 'student': fee = 99; break;
                     case 'professional': fee = 999; break;
-                    case 'institutional': fee = 1000; break;
-                    default: fee = 1000;
+                    case 'institutional': fee = 9999; break;
+                    default: fee = 9999;
                 }
             }
 
@@ -190,10 +191,15 @@ const MembershipApplication = () => {
                 // DIRECT ACTIVATION FOR FREE TIER
                 try {
                     const finalTier = 'free';
+                    // GENERATE MEMBERSHIP ID HERE
+                    const newMembershipId = await generateMembershipId(membershipType);
+                    addLog("Generated ID (Free): " + newMembershipId);
+
                     // For free tier, paymentId is 'N/A' or 'FREE'
-                    await updateMembershipInDB(membershipType, 'active', 'FREE_TIER', details, finalTier);
+                    await updateMembershipInDB(membershipType, 'active', 'FREE_TIER', details, finalTier, newMembershipId);
                     setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership (Free) Activated Successfully!`);
                     await fetchUserData();
+                    setTimeout(() => navigate('/dashboard'), 2000); // Redirect after 2s
                 } catch (error) {
                     setStatus('Activation failed: ' + error.message);
                 }
@@ -204,13 +210,19 @@ const MembershipApplication = () => {
                     currentUser.email,
                     userData?.phone || "",
                     fee,
+                    "Membership Application Fee",
                     async (paymentId) => {
                         addLog("Payment Success Callback");
                         try {
                             const finalTier = 'paid';
-                            await updateMembershipInDB(membershipType, 'active', paymentId, details, finalTier);
+                            // GENERATE MEMBERSHIP ID HERE
+                            const newMembershipId = await generateMembershipId(membershipType);
+                            addLog("Generated ID: " + newMembershipId);
+
+                            await updateMembershipInDB(membershipType, 'active', paymentId, details, finalTier, newMembershipId);
                             setStatus(`${membershipType.charAt(0).toUpperCase() + membershipType.slice(1)} Membership Activated Successfully!`);
                             await fetchUserData(); // Refresh dashboard state
+                            setTimeout(() => navigate('/dashboard'), 2000); // Redirect after 2s
                         } catch (error) {
                             setStatus('Payment successful but DB update failed: ' + error.message);
                         }
@@ -246,12 +258,15 @@ const MembershipApplication = () => {
         setLoading(false);
     }
 
-    const updateMembershipInDB = async (type, status, paymentId, details, tier = 'paid') => {
+    const updateMembershipInDB = async (type, status, paymentId, details, tier = 'paid', membershipId = null) => {
         // ... (keep existing) ...
         const updates = {};
         updates['/users/' + currentUser.uid + '/membershipStatus'] = status;
         updates['/users/' + currentUser.uid + '/membershipType'] = type;
         updates['/users/' + currentUser.uid + '/tier'] = tier; // NEW FIELD
+        if (membershipId) {
+            updates['/users/' + currentUser.uid + '/membershipId'] = membershipId;
+        }
 
         if (type === 'professional' && details.roleType) {
             updates['/users/' + currentUser.uid + '/professionalRole'] = details.roleType;
@@ -271,6 +286,19 @@ const MembershipApplication = () => {
             details,
             appliedAt: new Date().toISOString()
         };
+
+        // NEW: Public Verification Record
+        if (membershipId) {
+            updates['/public_memberships/' + membershipId] = {
+                name: userData?.name || currentUser.displayName || details.name || 'Member',
+                membershipId: membershipId,
+                membershipType: type,
+                status: status,
+                membershipDate: new Date().toISOString(),
+                uid: currentUser.uid
+            };
+        }
+
         return update(ref(db), updates);
     };
 
@@ -280,17 +308,57 @@ const MembershipApplication = () => {
             <div className="form-group mt-2">
                 {/* ... form content ... */}
 
-                <label className="mr-2">Select Category:</label>
-                <select
-                    value={membershipType}
-                    onChange={(e) => setMembershipType(e.target.value)}
-                    className="form-control mb-3 select-max-width"
-                    disabled={!!userData?.membershipType}
-                >
-                    <option value="student">Student Learner</option>
-                    <option value="professional">Professional Membership</option>
-                    <option value="institutional">Campus Partner (₹1,000)</option>
-                </select>
+                <label className="block mb-2 font-semibold">Select Category:</label>
+                {!userData?.membershipType ? (
+                    <div className="radio-group mb-4" style={{ flexDirection: 'column', gap: '0.8rem' }}>
+                        <label className={`radio-btn ${membershipType === 'professional' ? 'active' : ''}`}>
+                            <input
+                                type="radio"
+                                name="membershipType"
+                                value="professional"
+                                checked={membershipType === 'professional'}
+                                onChange={(e) => setMembershipType(e.target.value)}
+                            />
+                            <div>
+                                <div className="font-bold">Professional Membership</div>
+                                <div className="text-xs text-gray-500">For Faculty, Industry Experts & Alumni</div>
+                            </div>
+                        </label>
+
+                        <label className={`radio-btn ${membershipType === 'student' ? 'active' : ''}`}>
+                            <input
+                                type="radio"
+                                name="membershipType"
+                                value="student"
+                                checked={membershipType === 'student'}
+                                onChange={(e) => setMembershipType(e.target.value)}
+                            />
+                            <div>
+                                <div className="font-bold">Student Learner</div>
+                                <div className="text-xs text-gray-500">For Undergrad & Postgrad Students</div>
+                            </div>
+                        </label>
+
+                        <label className={`radio-btn ${membershipType === 'institutional' ? 'active' : ''}`}>
+                            <input
+                                type="radio"
+                                name="membershipType"
+                                value="institutional"
+                                checked={membershipType === 'institutional'}
+                                onChange={(e) => setMembershipType(e.target.value)}
+                            />
+                            <div>
+                                <div className="font-bold">Campus Partner</div>
+                                <div className="text-xs text-gray-500">For Colleges & Universities (₹9,999)</div>
+                            </div>
+                        </label>
+                    </div>
+                ) : (
+                    <div className="p-3 bg-gray-100 rounded mb-4 border">
+                        <span className="text-gray-600">Current Category: </span>
+                        <strong className="capitalize">{userData.membershipType}</strong>
+                    </div>
+                )}
 
                 {membershipType !== 'institutional' && (
                     <div className="tier-selector mb-4 p-3 bg-white border rounded">
@@ -528,7 +596,7 @@ const MembershipApplication = () => {
             >
                 {loading ? 'Processing...' : (
                     (membershipType === 'institutional')
-                        ? 'Pay ₹1,000 & Apply'
+                        ? 'Pay ₹9,999 & Apply'
                         : (membershipTier === 'free' ? 'Apply for Free' : `Pay ₹${membershipType === 'student' ? '99' : '999'} & ${userData?.tier === 'free' ? 'Upgrade' : 'Apply'}`)
                 )}
             </button>
@@ -630,7 +698,10 @@ const MembershipApplication = () => {
                         max-width: 300px;
                     }
                 }
+
             `}</style>
+
+            {uploadingPhoto && <LoadingOverlay message="Uploading photo..." />}
         </div>
     );
 };

@@ -12,9 +12,88 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [verificationSent, setVerificationSent] = useState(false);
+    const [verificationError, setVerificationError] = useState('');
     const [showEditModal, setShowEditModal] = useState(false);
     const [showCertificate, setShowCertificate] = useState(false);
     const [showUpgrade, setShowUpgrade] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+
+    useEffect(() => {
+        // Check for existing cooldown on mount
+        const lastSent = localStorage.getItem('emailVerificationLastSent');
+        if (lastSent) {
+            const timePassed = Math.floor((Date.now() - parseInt(lastSent)) / 1000);
+            if (timePassed < 60) {
+                setCooldown(60 - timePassed);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        // Countdown timer
+        let timer;
+        if (cooldown > 0) {
+            timer = setInterval(() => {
+                setCooldown(prev => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [cooldown]);
+
+    // POLL / FOCUS CHECK for Email Verification
+    useEffect(() => {
+        const checkVerification = async () => {
+            if (currentUser && !currentUser.emailVerified) {
+                try {
+                    await currentUser.reload();
+                    if (currentUser.emailVerified) {
+                        // Force refresh of user data to update UI + DB sync
+                        await fetchUserData();
+                    }
+                } catch (e) {
+                    console.error("Auto-reload auth error", e);
+                }
+            }
+        };
+
+        window.addEventListener('focus', checkVerification);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') checkVerification();
+        });
+
+        return () => {
+            window.removeEventListener('focus', checkVerification);
+            document.removeEventListener('visibilitychange', checkVerification);
+        };
+    }, [currentUser, fetchUserData]);
+
+    // SELF-HEALING: Ensure public_memberships record exists if user has ID
+    useEffect(() => {
+        if (userData?.membershipId && userData?.membershipStatus === 'active') {
+            import('firebase/database').then(({ centered, ref, get, update }) => {
+                import('../firebase').then(({ db }) => {
+                    const pubRef = ref(db, `public_memberships/${userData.membershipId}`);
+                    get(pubRef).then((snap) => {
+                        if (!snap.exists()) {
+                            console.log("Self-healing: Creating missing public record for " + userData.membershipId);
+                            update(ref(db), {
+                                [`public_memberships/${userData.membershipId}`]: {
+                                    name: userData.name || currentUser.displayName || 'Member',
+                                    membershipId: userData.membershipId,
+                                    membershipType: userData.membershipType,
+                                    status: userData.membershipStatus,
+                                    membershipDate: userData.joinedAt || new Date().toISOString(),
+                                    uid: currentUser.uid
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+        }
+    }, [userData, currentUser]);
+
+
 
     useEffect(() => {
         // Reset scroll position on mount/navigation
@@ -39,12 +118,20 @@ const Dashboard = () => {
     }
 
     const handleResend = async () => {
+        if (cooldown > 0) return;
+        setVerificationError(''); // Clear previous errors
+
         try {
             await resendVerification();
             setVerificationSent(true);
-            setTimeout(() => setVerificationSent(false), 5000); // Reset after 5s
+
+            // Set 60s cooldown
+            setCooldown(60);
+            localStorage.setItem('emailVerificationLastSent', Date.now().toString());
+
+            setTimeout(() => setVerificationSent(false), 5000); // Hide success msg after 5s
         } catch (error) {
-            alert("Error sending email: " + error.message);
+            setVerificationError(error.message);
         }
     };
 
@@ -57,18 +144,30 @@ const Dashboard = () => {
         <div className="dashboard-page section container">
             <SEO title="Dashboard" description="User Dashboard" />
 
-            {/* {!currentUser.emailVerified && (
+            {!currentUser.emailVerified && (
                 <div className="alert-warning mb-4">
                     <p>
                         Your email is not verified. Please check your inbox.
                         {!verificationSent ? (
-                            <button onClick={handleResend} className="btn-link">Resend Verification Email</button>
+                            <button
+                                onClick={handleResend}
+                                className="btn-link"
+                                disabled={cooldown > 0}
+                                style={{ opacity: cooldown > 0 ? 0.5 : 1, cursor: cooldown > 0 ? 'not-allowed' : 'pointer' }}
+                            >
+                                {cooldown > 0 ? `Resend available in ${cooldown}s` : "Resend Verification Email"}
+                            </button>
                         ) : (
                             <span className="text-success ml-2"> Email Sent!</span>
                         )}
+                        {verificationError && (
+                            <span className="text-error ml-2" style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.9em' }}>
+                                ⚠️ {verificationError}
+                            </span>
+                        )}
                     </p>
                 </div>
-            )} */}
+            )}
 
             <div className="dashboard-header">
                 <div>
@@ -88,7 +187,7 @@ const Dashboard = () => {
                     <h3>Membership Status</h3>
                     <p>Status: <strong style={{ textTransform: 'capitalize' }}>{userData?.membershipStatus || 'None'}</strong></p>
                     {userData?.membershipType && <p>Type: <strong style={{ textTransform: 'capitalize' }}>{userData?.membershipType}</strong></p>}
-                    {userData?.membershipId && <p>Membership ID: <strong style={{ color: 'var(--color-primary)' }}>{userData?.membershipId}</strong></p>}
+                    {userData?.membershipId && <p>Membership Number: <strong style={{ color: 'var(--color-primary)' }}>{userData?.membershipId}</strong></p>}
 
                     {/* Free Tier Upgrade Option */}
                     {userData?.membershipStatus === 'active' && userData?.tier === 'free' && !showUpgrade && (
