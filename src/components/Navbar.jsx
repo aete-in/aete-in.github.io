@@ -134,8 +134,31 @@ const Navbar = () => {
                   );
                 })}
 
+
                 {/* Mobile Auth Buttons */}
-                {!currentUser && (
+                {currentUser ? (
+                  <div className="mobile-auth-buttons" style={{ padding: '1rem 0' }}>
+                    <NavLink
+                      to="/dashboard"
+                      className="mobile-link"
+                      onClick={() => setIsOpen(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                      <User size={18} /> Dashboard
+                    </NavLink>
+                    <button
+                      onClick={async () => {
+                        setIsOpen(false);
+                        await logout();
+                        navigate('/');
+                      }}
+                      className="mobile-link"
+                      style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', fontSize: '1rem' }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
                   <div className="mobile-auth-buttons" style={{ padding: '1rem 0' }}>
                     <button
                       onClick={() => { setIsOpen(false); setAuthModalView('login'); }}
@@ -145,12 +168,13 @@ const Navbar = () => {
                     </button>
                     <button
                       onClick={() => { setIsOpen(false); setAuthModalView('signup'); }}
-                      className="mobile-link" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', fontSize: '1rem', color: 'var(--color-secondary)' }}
+                      className="mobile-link" style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', fontSize: '1rem' }}
                     >
                       Sign Up
                     </button>
                   </div>
                 )}
+
 
               </motion.div>
             )}
