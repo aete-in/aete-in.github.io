@@ -15,7 +15,7 @@ const Terms = () => {
           <h3>1. Nature of Business & Association</h3>
           <p>
             <strong>Association of Engineers for Technology and Education (AETE)</strong> is a registered
-            <strong> Educational Professional Association</strong> (MSME Registered). AETE is strictly an academic and professional development body dedicated to the advancement of engineering education.
+            <strong> Educational Professional Association</strong>. AETE is strictly an academic and professional development body dedicated to the advancement of engineering education.
           </p>
           <div className="alert-box">
             <strong>IMPORTANT DISCLAIMER:</strong> AETE is <strong>NOT</strong> a networking platform, lead generation agency, contact brokerage, or social network. We do NOT sell data, leads, or facilitate commercial networking. All interactions are strictly for educational and research collaboration.

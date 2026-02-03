@@ -12,7 +12,7 @@ const Footer = () => {
               <span className="logo-text">AETE</span>
             </div>
             <p className="brand-desc">
-              The Association of Engineers for Technology and Education is a premier professional platform (MSME Regd.) bridging the gap between industry and academia.
+              The Association of Engineers for Technology and Education is a premier professional platform bridging the gap between industry and academia.
             </p>
             <div className="social-links">
               <a href="#" className="social-icon"><Linkedin size={20} /></a>
@@ -221,6 +221,10 @@ const Footer = () => {
                     .footer-bottom {
                         flex-direction: column;
                         text-align: center;
+                    }
+                    .footer-legal {
+                        flex-direction: column;
+                        gap: 0.5rem;
                     }
                 }
             `}</style>

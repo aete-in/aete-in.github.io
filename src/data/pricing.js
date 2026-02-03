@@ -8,8 +8,8 @@ export const PRICING_PLANS = [
     numericPrice: 99,
     description: "For engineering students. Start for Free or upgrade for ₹99 to get certified access.",
     features: [
-      "Access to Academic Resource Pool (Basic / Full when Paid)",
-      "Certified Student Learner Credential (Paid Only)",
+      "Access to Academic Resource Pool",
+      "Certified Student Learner Credential",
       "Discounts on workshops & hackathons",
       "Access to Technical Study Groups"
     ],
@@ -30,9 +30,9 @@ export const PRICING_PLANS = [
     numericPrice: 999,
     description: "For Faculty & Industry Professionals. Join for Free or pay ₹999 for full directory visibility.",
     features: [
-      "Access to Academic Resource Pool (Basic / Full when Paid)",
-      "Professional Competence Certificate (Paid Only)",
-      "Priority Access to Advisory Board Meetings (Paid Only)",
+      "Access to Academic Resource Pool",
+      "Professional Competence Certificate",
+      "Priority Access to Advisory Board Meetings",
       "Eligibility for Senior Mentor Certification"
     ],
     buttonText: "Get Professional Pass",

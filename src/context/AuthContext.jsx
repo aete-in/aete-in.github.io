@@ -159,10 +159,19 @@ export const AuthProvider = ({ children }) => {
         if (!currentUser) return;
 
         try {
-            // 1. Delete DB Records
+            // 1. Prepare Atomic Delete
             const updates = {};
             updates[`/users/${currentUser.uid}`] = null;
             updates[`/memberships/${currentUser.uid}`] = null;
+            updates[`/applications/${currentUser.uid}`] = null;
+
+            // Remove public verification record if exists
+            if (userData?.membershipId) {
+                updates[`/public_memberships/${userData.membershipId}`] = null;
+            }
+
+            // Remove from counters/indexes if necessary (Optional, but we keep counters strict)
+
             await update(ref(db), updates);
 
             // 2. Delete Auth Account

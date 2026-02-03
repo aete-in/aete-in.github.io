@@ -106,6 +106,13 @@ h6 {
   padding-bottom: var(--spacing-xl);
 }
 
+@media (max-width: 768px) {
+  .section {
+    padding-top: 6rem; /* Ensure enough space for fixed navbar on mobile */
+    padding-bottom: var(--spacing-lg);
+  }
+}
+
 .btn {
   display: inline-block;
   padding: 0.75rem 1.5rem;

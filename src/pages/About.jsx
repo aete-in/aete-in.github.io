@@ -42,7 +42,7 @@ const About = () => {
 
   return (
     <div className="about-page">
-      <SEO title="About Us" description="AETE is an MSME-registered Industry-Academia organization. Learn about our legal status and objectives." />
+      <SEO title="About Us" description="AETE is an Industry-Academia organization. Learn about our legal status and objectives." />
       <PageHero
         title="About Us"
         subtitle="Bridging the gap between theory and practice through technology."
@@ -62,7 +62,7 @@ const About = () => {
               <div className="section-label">Who We Are</div>
               <h2 className="section-title">A Community of <br />Innovators & Educators</h2>
               <p className="lead-text">
-                AETE is a registered <strong>Educational Professional Association</strong> (MSME Registered). Managed by Bitsky, we operate strictly as an academic body dedicated to technical excellence and faculty development.
+                AETE is a registered <strong>Educational Professional Association</strong>. Managed by Bitsky, we operate strictly as an academic body dedicated to technical excellence and faculty development.
               </p>
               <p className="secondary-text">
                 We are dedicated to facilitating <strong>educational collaboration</strong> among engineers and educators. Our primary mission is to advance engineering education through FDPs, workshops, and certification programs.
@@ -119,7 +119,7 @@ const About = () => {
           </div>
           <div className="legal-body">
             <p>
-              <strong>Association of Engineers for Technology and Education (AETE)</strong> is a registered Micro, Small & Medium Enterprise (MSME) under the Government of India.
+              <strong>Association of Engineers for Technology and Education (AETE)</strong> is a professional organization dedicated to engineering advancements.
             </p>
             <p>
               <strong>Nature of Operation:</strong> Professional Association / Educational Trust.

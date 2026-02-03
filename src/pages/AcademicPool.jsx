@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Search, Briefcase, MapPin, Award, Lock, User as UserIcon, UserCheck, Mail, Phone, X, Trash2 } from 'lucide-react';
+import { ArrowRight, Search, Briefcase, MapPin, Award, Lock, User as UserIcon, UserCheck, Mail, Phone, X, Trash2, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
-import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
+
+
 import { db } from '../firebase';
 import { ref, onValue, update } from 'firebase/database';
 import { getSmartSummary } from '../utils/smartSummary';
@@ -84,14 +86,11 @@ const AcademicPool = () => {
 
     if (loading) return null;
 
-    const filteredPersons = persons.filter(person => {
+    // STRICT: If not logged in, show NOTHING (empty list)
+    // The UI will handle the "Please Login" message
+    const filteredPersons = !currentUser ? [] : persons.filter(person => {
         // Visibility Check
-        const isProfilePaid = person.tier === 'paid'; // Assumes 'tier' is set. If undefined, treat as free? 
-        // Logic: Visible if (Profile is Paid) OR (Viewer is Paid/Institutional)
-        // Note: If existing users don't have 'tier', we might need to assume they are paid or free.
-        // Let's assume 'paid' for safety if they were migrated, or 'free' if strict. 
-        // Plan said: "Existing active members are Paid".
-        // So: const effectiveTier = person.tier || 'paid';
+        const isProfilePaid = person.tier === 'paid';
         const effectiveTier = person.tier || 'paid'; // Default to paid for legacy active users
 
         const isVisible = (effectiveTier === 'paid') || isViewerPaid;
@@ -111,17 +110,38 @@ const AcademicPool = () => {
     return (
         <div className="resource-network-page">
             <SEO title="Academic Resource Pool" description="Access industry experts and academic leaders for educational programs." />
-            <PageHeader
+            <PageHero
                 title="Academic Resource Pool"
-                subtitle="Access a voluntary directory of subject matter experts."
+                subtitle="Exclusive directory of experts for our members."
             />
 
             <div className="container section pt-0 mobile-section-adjust">
 
-                {/* Map Section */}
-                <ResourceMap persons={persons} onMarkerClick={setSelectedPerson} />
+                {/* Map Section - Only if Logged In and Verified */}
+                {currentUser && currentUser.emailVerified ? (
+                    <ResourceMap persons={persons} onMarkerClick={setSelectedPerson} />
+                ) : (
+                    <div className="limit-banner mb-5" style={{ background: '#ebf8ff', borderColor: '#bee3f8' }}>
+                        <div className="banner-content">
+                            <Lock size={20} className="banner-icon" style={{ color: '#3182ce' }} />
+                            <p style={{ color: '#2c5282' }}>
+                                {currentUser ? (
+                                    <>
+                                        <strong>Email Verification Required:</strong> Your email is not verified. Please check your inbox.
+                                        Only after verification will your profile be shown in the pool and you will be able to see others.
+                                    </>
+                                ) : (
+                                    <>
+                                        <strong>Access Restricted:</strong> You must be logged in to view the Academic Resource Pool.
+                                    </>
+                                )}
+                            </p>
+                        </div>
+                        {!currentUser && <button className="btn-upgrade" style={{ background: '#3182ce' }} onClick={() => navigate('/login')}>Login Now</button>}
+                    </div>
+                )}
 
-                {!isViewerPaid && (
+                {currentUser && currentUser.emailVerified && !isViewerPaid && (
                     <div className="limit-banner mb-4">
                         <div className="banner-content">
                             <Lock size={20} className="banner-icon" />
@@ -136,94 +156,98 @@ const AcademicPool = () => {
                 )}
 
 
-                <div className="search-filter mb-4 mobile-mb-3">
-                    <input
-                        type="text"
-                        placeholder="Search by name, expertise, or location..."
-                        className="search-bar"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
+                {currentUser && currentUser.emailVerified && (
+                    <>
+                        <div className="search-filter mb-4 mobile-mb-3">
+                            <input
+                                type="text"
+                                placeholder="Search by name, expertise, or location..."
+                                className="search-bar"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
 
-                <div className="experts-grid">
-                    {filteredPersons.length > 0 ? (
-                        filteredPersons.map((person, index) => (
-                            <motion.div
-                                key={index}
-                                className="expert-card"
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 }}
-                                onClick={() => setSelectedPerson(person)}
-                            >
-                                <div className="expert-card-content">
-                                    <div className="avatar-large">
-                                        {person.photoUrl ? (
-                                            <img src={person.photoUrl} alt={person.name} />
-                                        ) : (
-                                            <UserIcon size={80} color="#cbd5e0" />
-                                        )}
-                                    </div>
+                        <div className="experts-grid">
+                            {filteredPersons.length > 0 ? (
+                                filteredPersons.map((person, index) => (
+                                    <motion.div
+                                        key={index}
+                                        className="expert-card"
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: index * 0.1 }}
+                                        onClick={() => setSelectedPerson(person)}
+                                    >
+                                        <div className="expert-card-content">
+                                            <div className="avatar-large">
+                                                {person.photoUrl ? (
+                                                    <img src={person.photoUrl} alt={person.name} />
+                                                ) : (
+                                                    <UserIcon size={80} color="#cbd5e0" />
+                                                )}
+                                            </div>
 
-                                    <h3 className="expert-name">{person.name}</h3>
-                                    <p className="expert-designation">{person.designation}</p>
-                                    <p className="expert-org">{person.organization}</p>
+                                            <h3 className="expert-name">{person.name}</h3>
+                                            <p className="expert-designation">{person.designation}</p>
+                                            <p className="expert-org">{person.organization}</p>
 
-                                    <div className="expert-divider"></div>
+                                            <div className="expert-divider"></div>
 
-                                    <div className="expert-meta">
-                                        <div className="meta-item">
-                                            <MapPin size={14} />
-                                            <span>{person.location}</span>
-                                        </div>
-                                        <div className="meta-item top-align">
-                                            <Award size={14} className="mt-1 flex-shrink-0" />
-                                            <div className="expertise-chips">
-                                                {person.expertise?.split(',').slice(0, 3).map((tech, i) => (
-                                                    <span key={i} className="chip">{tech.trim()}</span>
-                                                ))}
-                                                {person.expertise?.split(',').length > 3 && (
-                                                    <span className="chip-more">+{person.expertise.split(',').length - 3}</span>
+                                            <div className="expert-meta">
+                                                <div className="meta-item">
+                                                    <MapPin size={14} />
+                                                    <span>{person.location}</span>
+                                                </div>
+                                                <div className="meta-item top-align">
+                                                    <Award size={14} className="mt-1 flex-shrink-0" />
+                                                    <div className="expertise-chips">
+                                                        {person.expertise?.split(',').slice(0, 3).map((tech, i) => (
+                                                            <span key={i} className="chip">{tech.trim()}</span>
+                                                        ))}
+                                                        {person.expertise?.split(',').length > 3 && (
+                                                            <span className="chip-more">+{person.expertise.split(',').length - 3}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {person.experience && (
+                                                    <div className="meta-item">
+                                                        <Briefcase size={14} />
+                                                        <span>Exp: {person.experience}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {person.bio && (
+                                                <p className="expert-bio">
+                                                    {getSmartSummary(person.bio)}
+                                                </p>
+                                            )}
+
+                                            <div className="contact-buttons-card">
+                                                {person.email && (
+                                                    <a href={`mailto:${person.email}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
+                                                        <Mail size={16} /> Email
+                                                    </a>
+                                                )}
+                                                {person.phone && (
+                                                    <a href={`tel:${person.phone}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
+                                                        <Phone size={16} /> Call
+                                                    </a>
                                                 )}
                                             </div>
                                         </div>
-                                        {person.experience && (
-                                            <div className="meta-item">
-                                                <Briefcase size={14} />
-                                                <span>Exp: {person.experience}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {person.bio && (
-                                        <p className="expert-bio">
-                                            {getSmartSummary(person.bio)}
-                                        </p>
-                                    )}
-
-                                    <div className="contact-buttons-card">
-                                        {person.email && (
-                                            <a href={`mailto:${person.email}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
-                                                <Mail size={16} /> Email
-                                            </a>
-                                        )}
-                                        {person.phone && (
-                                            <a href={`tel:${person.phone}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
-                                                <Phone size={16} /> Call
-                                            </a>
-                                        )}
-                                    </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="no-access col-span-full">
+                                    <p>No resource persons found matching your criteria.</p>
                                 </div>
-                            </motion.div>
-                        ))
-                    ) : (
-                        <div className="no-access col-span-full">
-                            <p>No resource persons found matching your criteria.</p>
+                            )}
                         </div>
-                    )}
-                </div>
+                    </>
+                )}
             </div>
 
             <AnimatePresence>
@@ -260,16 +284,41 @@ const AcademicPool = () => {
                                     <p className="modal-designation">{selectedPerson.designation}</p>
                                     <p className="modal-org">{selectedPerson.organization}</p>
 
+                                    <div className="sidebar-meta">
+                                        <div className="sidebar-meta-item">
+                                            <MapPin size={16} className="meta-icon-sidebar" />
+                                            <span>{selectedPerson.location}</span>
+                                        </div>
+                                        {selectedPerson.experience && (
+                                            <div className="sidebar-meta-item">
+                                                <Briefcase size={16} className="meta-icon-sidebar" />
+                                                <span>{selectedPerson.experience} Exp</span>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="modal-contact-buttons">
                                         {selectedPerson.email && (
                                             <a href={`mailto:${selectedPerson.email}`} className="btn-full" onClick={(e) => e.stopPropagation()}>
-                                                <Mail size={18} /> Send Email
+                                                <Mail size={18} /> {selectedPerson.email}
                                             </a>
                                         )}
                                         {selectedPerson.phone && (
-                                            <a href={`tel:${selectedPerson.phone}`} className="btn-full" onClick={(e) => e.stopPropagation()}>
-                                                <Phone size={18} /> Call Now
-                                            </a>
+                                            <>
+                                                <a href={`tel:${selectedPerson.phone}`} className="btn-full" onClick={(e) => e.stopPropagation()}>
+                                                    <Phone size={18} /> {selectedPerson.phone}
+                                                </a>
+                                                <a
+                                                    href={`https://wa.me/${selectedPerson.phone.replace(/[^0-9]/g, '')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="btn-full"
+                                                    style={{ background: '#25D366', marginTop: '0.2rem' }}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <MessageCircle size={18} /> WhatsApp
+                                                </a>
+                                            </>
                                         )}
 
                                         {isAdmin && (
@@ -277,7 +326,7 @@ const AcademicPool = () => {
                                                 className="btn-full btn-delete"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleDeleteMember(selectedPerson.id); // Assuming ID is available, wait check
+                                                    handleDeleteMember(selectedPerson.id);
                                                 }}
                                             >
                                                 <Trash2 size={18} /> Delete Member
@@ -305,6 +354,21 @@ const AcademicPool = () => {
                                         </div>
                                     </div>
 
+                                    {/* Resource Roles Section */}
+                                    {selectedPerson.resourceRoles && selectedPerson.resourceRoles.length > 0 && (
+                                        <>
+                                            <span className="modal-section-title">Resource Roles</span>
+                                            <div className="expertise-chips mb-5" style={{ justifyContent: 'flex-start', marginBottom: '2rem' }}>
+                                                {Array.isArray(selectedPerson.resourceRoles) ? selectedPerson.resourceRoles.map((role, i) => (
+                                                    <span key={i} className="chip role-chip-display" style={{ padding: '0.4rem 1rem', fontSize: '0.85rem', borderColor: '#4299e1', color: '#2b6cb0', background: '#ebf8ff' }}>{role}</span>
+                                                )) : (
+                                                    // Handle case where it might be saved as non-array legacy
+                                                    <span className="chip">{selectedPerson.resourceRoles}</span>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+
                                     <span className="modal-section-title">Expertise</span>
                                     {/* Using same chip functionality but perhaps larger or just normal chips in a container */}
                                     <div className="expertise-chips mb-5" style={{ justifyContent: 'flex-start', marginBottom: '2rem' }}>
@@ -327,8 +391,7 @@ const AcademicPool = () => {
             </AnimatePresence>
 
             <style jsx="true">{`
-
-                .limit-banner {
+                .resource-network-page .limit-banner {
                     background: #fff5f5;
                     border: 1px solid #feb2b2;
                     border-radius: 8px;
@@ -339,14 +402,14 @@ const AcademicPool = () => {
                     flex-wrap: wrap;
                     gap: 1rem;
                 }
-                .banner-content {
+                .resource-network-page .banner-content {
                     display: flex;
                     align-items: center;
                     gap: 0.75rem;
                     color: #c53030;
                 }
-                .banner-icon { flex-shrink: 0; }
-                .btn-upgrade {
+                .resource-network-page .banner-icon { flex-shrink: 0; }
+                .resource-network-page .btn-upgrade {
                     background: #c53030;
                     color: white;
                     border: none;
@@ -356,34 +419,34 @@ const AcademicPool = () => {
                     cursor: pointer;
                     transition: all 0.2s;
                     font-size: 0.9rem;
+                    width: auto;
                 }
-                .btn-upgrade:hover { background: #9b2c2c; }
-                .mobile-break { display: none; }
+                .resource-network-page .btn-upgrade:hover { background: #9b2c2c; }
+                .resource-network-page .mobile-break { display: none; }
+                
                 @media (max-width: 600px) {
-                    .mobile-break { display: block; }
-                    .limit-banner { flex-direction: column; align-items: flex-start; text-align: left; }
-                    .btn-upgrade { width: 100%; }
+                    .resource-network-page .mobile-break { display: block; }
+                    .resource-network-page .limit-banner { flex-direction: column; align-items: flex-start; text-align: left; }
+                    .resource-network-page .btn-upgrade { width: 100%; }
                 }
 
-                .mobile-section-adjust {
+                .resource-network-page .mobile-section-adjust {
                     padding-top: 1rem;
                 }
-                .mobile-mb-3 {
+                .resource-network-page .mobile-mb-3 {
                     margin-bottom: 1.5rem;
                 }
-                .mb-4 { margin-bottom: 2rem; }
-                .mb-5 { margin-bottom: 3rem; }
+                .resource-network-page .mb-4 { margin-bottom: 2rem; }
+                .resource-network-page .mb-5 { margin-bottom: 3rem; }
                 
                 @media (min-width: 768px) {
-                    .mobile-section-adjust { padding-top: var(--spacing-xl); }
-                    .mobile-mb-3 { margin-bottom: 3rem; }
+                    .resource-network-page .mobile-section-adjust { padding-top: var(--spacing-xl); }
+                    .resource-network-page .mobile-mb-3 { margin-bottom: 3rem; }
                 }
                 
-                .search-bar {
-                    width: 100%;
+                .resource-network-page .search-bar {
                     max-width: 600px;
                     width: 100%;
-                    max-width: 600px;
                     padding: 0.75rem 1.25rem;
                     border: 1px solid #e2e8f0;
                     border-radius: 50px;
@@ -393,13 +456,14 @@ const AcademicPool = () => {
                     box-shadow: 0 4px 6px rgba(0,0,0,0.03);
                     transition: all 0.2s;
                 }
-                .search-bar:focus {
+                .resource-network-page .search-bar:focus {
                     outline: none;
                     border-color: var(--color-secondary);
                     box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.1);
                 }
 
-                .btn-primary {
+                /* Scoped Button Primary to avoid leaking to Navbar */
+                .resource-network-page .btn-primary {
                     background-color: var(--color-primary);
                     color: white;
                     padding: 0.5rem 1rem;
@@ -412,22 +476,21 @@ const AcademicPool = () => {
                     gap: 0.5rem;
                     text-decoration: none;
                 }
-                .btn-primary:hover { background-color: #1a365d; }
+                .resource-network-page .btn-primary:hover { background-color: #1a365d; }
 
-                .experts-grid {
-                    display: grid;
+                .resource-network-page .experts-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
                     gap: 1.5rem;
                 }
                 
                 @media (min-width: 768px) {
-                    .experts-grid {
+                    .resource-network-page .experts-grid {
                          gap: 2.5rem;
                     }
                 }
 
-                .expert-card {
+                .resource-network-page .expert-card {
                     background: white;
                     border-radius: 16px;
                     overflow: hidden;
@@ -440,12 +503,12 @@ const AcademicPool = () => {
                     height: 100%;
                 }
 
-                .expert-card:hover {
+                .resource-network-page .expert-card:hover {
                     transform: translateY(-5px);
                     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
                 }
 
-                .expert-card-content {
+                .resource-network-page .expert-card-content {
                     padding: 1.25rem;
                     text-align: center;
                     display: flex;
@@ -455,12 +518,12 @@ const AcademicPool = () => {
                 }
 
                 @media (min-width: 768px) {
-                    .expert-card-content {
+                    .resource-network-page .expert-card-content {
                         padding: 2rem;
                     }
                 }
 
-                .avatar-large {
+                .resource-network-page .avatar-large {
                     width: 120px; 
                     height: 120px;
                     border-radius: 50%;
@@ -473,13 +536,13 @@ const AcademicPool = () => {
                     align-items: center;
                     justify-content: center;
                 }
-                .avatar-large img {
+                .resource-network-page .avatar-large img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
                 }
 
-                .expert-name {
+                .resource-network-page .expert-name {
                     font-size: 1.25rem;
                     font-weight: 700;
                     color: #2d3748;
@@ -487,7 +550,7 @@ const AcademicPool = () => {
                     line-height: 1.3;
                 }
 
-                .expert-designation {
+                .resource-network-page .expert-designation {
                     color: var(--color-secondary);
                     font-weight: 600;
                     font-size: 0.95rem;
@@ -495,14 +558,14 @@ const AcademicPool = () => {
                     line-height: 1.4;
                 }
 
-                .expert-org {
+                .resource-network-page .expert-org {
                     color: #718096;
                     font-size: 0.9rem;
                     margin-bottom: 1.25rem;
                     line-height: 1.4;
                 }
 
-                .expert-divider {
+                .resource-network-page .expert-divider {
                     width: 40px;
                     height: 3px;
                     background: #e2e8f0;
@@ -510,7 +573,7 @@ const AcademicPool = () => {
                     border-radius: 2px;
                 }
 
-                .expert-meta {
+                .resource-network-page .expert-meta {
                     display: flex;
                     flex-direction: column;
                     gap: 0.5rem;
@@ -518,7 +581,7 @@ const AcademicPool = () => {
                     width: 100%;
                 }
 
-                .meta-item {
+                .resource-network-page .meta-item {
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -526,19 +589,19 @@ const AcademicPool = () => {
                     color: #4a5568;
                     font-size: 0.9rem;
                 }
-                .meta-item.top-align {
+                .resource-network-page .meta-item.top-align {
                     align-items: flex-start;
                 }
-                .mt-1 { margin-top: 0.25rem; }
-                .flex-shrink-0 { flex-shrink: 0; }
+                .resource-network-page .mt-1 { margin-top: 0.25rem; }
+                .resource-network-page .flex-shrink-0 { flex-shrink: 0; }
 
-                .expertise-chips {
+                .resource-network-page .expertise-chips {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 0.3rem;
                     justify-content: center;
                 }
-                .chip {
+                .resource-network-page .chip {
                     background: #edf2f7;
                     color: #2d3748;
                     padding: 2px 8px;
@@ -547,13 +610,13 @@ const AcademicPool = () => {
                     font-weight: 600;
                     border: 1px solid #e2e8f0;
                 }
-                .chip-more {
+                .resource-network-page .chip-more {
                     font-size: 0.75rem;
                     color: #718096;
                     align-self: center;
                 }
                 
-                .expert-bio {
+                .resource-network-page .expert-bio {
                     font-size: 0.9rem;
                     color: #718096;
                     line-height: 1.6;
@@ -566,13 +629,13 @@ const AcademicPool = () => {
                     text-align: justify; /* Justify text */
                 }
 
-                .contact-buttons-card {
+                .resource-network-page .contact-buttons-card {
                     display: flex;
                     gap: 1rem;
                     margin-top: auto;
                 }
 
-                .contact-btn {
+                .resource-network-page .contact-btn {
                     display: inline-flex;
                     align-items: center;
                     gap: 0.5rem;
@@ -585,12 +648,21 @@ const AcademicPool = () => {
                     transition: background-color 0.2s ease;
                 }
 
-                .contact-btn:hover {
+                .resource-network-page .contact-btn:hover {
                     background-color: #005656;
                 }
 
-                /* Modal Styles */
-                .modal-overlay {
+                /* Modal Styles - Modal is usually appended to body (portals), 
+                   but in this code it seems inline? 
+                   If inline: strictly scope. 
+                   If portal: standard scoping fails but generic classes might leak.
+                   Assuming AnimatePresence renders inline or portal. 
+                   If portal, we need specific classes. 
+                   But let's assume inline since framed-motion usually animates inline unless Portal used.
+                   The 'modal-overlay' is fixed, so it acts like a modal.
+                   I will scope it under .resource-network-page assuming it is rendered inside it (it is in JSX).
+                */
+                .resource-network-page .modal-overlay {
                     position: fixed;
                     top: 0;
                     left: 0;
@@ -601,11 +673,11 @@ const AcademicPool = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    z-index: 1000;
+                    z-index: 2000; /* Increased to stay above navbar if needed */
                     padding: 1rem;
                 }
 
-                .modal-content {
+                .resource-network-page .modal-content {
                     background: white;
                     border-radius: 20px;
                     width: 100%;
@@ -621,7 +693,7 @@ const AcademicPool = () => {
                 }
 
                 @media (min-width: 768px) {
-                    .modal-content {
+                    .resource-network-page .modal-content {
                         height: auto;
                         max-height: 90vh;
                         border-radius: 20px;
@@ -629,7 +701,7 @@ const AcademicPool = () => {
                     }
                 }
 
-                .close-button {
+                .resource-network-page .close-button {
                     position: absolute;
                     top: 1.5rem;
                     right: 1.5rem;
@@ -646,18 +718,18 @@ const AcademicPool = () => {
                     z-index: 10;
                 }
 
-                .close-button:hover {
+                .resource-network-page .close-button:hover {
                     color: #2d3748;
                     background: #edf2f7;
                 }
 
-                .modal-body {
+                .resource-network-page .modal-body {
                     display: flex;
                     flex-direction: column;
                 }
 
                 /* Sidebar Style for Details */
-                .modal-sidebar {
+                .resource-network-page .modal-sidebar {
                     padding: 1.5rem 1.25rem;
                     display: flex;
                     flex-direction: column;
@@ -667,13 +739,13 @@ const AcademicPool = () => {
                     border-bottom: 1px solid #edf2f7;
                 }
 
-                .modal-main {
+                .resource-network-page .modal-main {
                     padding: 1.5rem 1.25rem;
                     background: white;
                     flex: 1;
                 }
 
-                .modal-avatar {
+                .resource-network-page .modal-avatar {
                     width: 100px;
                     height: 100px;
                     border-radius: 50%;
@@ -683,13 +755,13 @@ const AcademicPool = () => {
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
                     background: #f7fafc;
                 }
-                .modal-avatar img {
+                .resource-network-page .modal-avatar img {
                     width: 100%;
                     height: 100%;
                     object-fit: cover;
                 }
 
-                .modal-designation {
+                .resource-network-page .modal-designation {
                     color: var(--color-secondary);
                     font-weight: 600;
                     font-size: 1rem;
@@ -697,7 +769,7 @@ const AcademicPool = () => {
                     line-height: 1.3;
                 }
 
-                .modal-org {
+                .resource-network-page .modal-org {
                     color: #718096;
                     font-size: 0.9rem;
                     margin-bottom: 1rem;
@@ -706,31 +778,30 @@ const AcademicPool = () => {
 
                 /* Responsive Desktop layout */
                 @media (min-width: 768px) {
-                    .modal-body {
+                    .resource-network-page .modal-body {
                         flex-direction: row;
                         align-items: stretch;
                     }
-                    .modal-sidebar {
+                    .resource-network-page .modal-sidebar {
                         width: 350px;
                         flex-shrink: 0;
                         border-right: 1px solid #edf2f7;
                         border-bottom: none;
                         padding: 4rem 2.5rem; /* Spacing for close button */
                     }
-                    .modal-main {
+                    .resource-network-page .modal-main {
                         padding: 4rem 2.5rem;
                     }
-                    .modal-avatar {
+                    .resource-network-page .modal-avatar {
                         width: 160px;
                         height: 160px;
                     }
-                    .modal-meta-grid {
+                    .resource-network-page .modal-meta-grid {
                          grid-template-columns: repeat(2, 1fr);
                     }
-                    /* Align text left in sidebar for readability if needed, or keep centered */
                 }
 
-                .modal-header-name {
+                .resource-network-page .modal-header-name {
                     font-size: 2rem;
                     font-weight: 800;
                     color: #1a202c;
@@ -738,7 +809,7 @@ const AcademicPool = () => {
                     line-height: 1.2;
                 }
 
-                .modal-section-title {
+                .resource-network-page .modal-section-title {
                     font-size: 0.85rem;
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
@@ -749,16 +820,16 @@ const AcademicPool = () => {
                     display: block;
                     text-align: left;
                 }
-                .modal-section-title:first-child { margin-top: 0; }
+                .resource-network-page .modal-section-title:first-child { margin-top: 0; }
 
-                .modal-meta-grid {
+                .resource-network-page .modal-meta-grid {
                     display: grid;
                     grid-template-columns: 1fr; 
                     gap: 1rem;
                     margin-bottom: 2rem;
                 }
 
-                .modal-meta-item {
+                .resource-network-page .modal-meta-item {
                     display: flex;
                     align-items: flex-start;
                     gap: 0.75rem;
@@ -768,30 +839,30 @@ const AcademicPool = () => {
                     border: 1px solid #edf2f7;
                 }
                 
-                .meta-icon {
+                .resource-network-page .meta-icon {
                     color: var(--color-secondary);
                     margin-top: 0.1rem;
                     flex-shrink: 0;
                 }
 
-                .meta-content {
+                .resource-network-page .meta-content {
                     display: flex;
                     flex-direction: column;
                     text-align: left;
                 }
-                .meta-label {
+                .resource-network-page .meta-label {
                     font-size: 0.75rem;
                     color: #718096;
                     margin-bottom: 0.25rem;
                 }
-                .meta-value {
+                .resource-network-page .meta-value {
                     font-size: 0.95rem;
                     color: #2d3748;
                     font-weight: 500;
                     line-height: 1.4;
                 }
 
-                .modal-bio {
+                .resource-network-page .modal-bio {
                     font-size: 1rem;
                     color: #4a5568;
                     line-height: 1.8;
@@ -800,7 +871,31 @@ const AcademicPool = () => {
                     white-space: pre-wrap; /* Preserve paragraphs */
                 }
 
-                .modal-contact-buttons {
+                .resource-network-page .sidebar-meta {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                    margin-bottom: 0.5rem;
+                    width: 100%;
+                }
+                .resource-network-page .sidebar-meta-item {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    color: #4a5568;
+                    font-size: 0.9rem;
+                    background: #f7fafc;
+                    padding: 0.5rem;
+                    border-radius: 6px;
+                    border: 1px solid #edf2f7;
+                }
+                .resource-network-page .meta-icon-sidebar {
+                    color: var(--color-secondary);
+                    flex-shrink: 0;
+                }
+
+                .resource-network-page .modal-contact-buttons {
                     display: flex;
                     flex-direction: column;
                     gap: 0.75rem;
@@ -808,7 +903,7 @@ const AcademicPool = () => {
                     margin-top: 1.5rem;
                 }
                 
-                .btn-full {
+                .resource-network-page .btn-full {
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -821,16 +916,16 @@ const AcademicPool = () => {
                     text-decoration: none;
                     transition: all 0.2s;
                 }
-                .btn-full:hover {
+                .resource-network-page .btn-full:hover {
                     background: #2c5282;
                     transform: translateY(-1px);
                     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
                 }
-                .btn-delete {
+                .resource-network-page .btn-delete {
                     background: #e53e3e;
                     margin-top: 1rem;
                 }
-                .btn-delete:hover {
+                .resource-network-page .btn-delete:hover {
                     background: #c53030;
                 }
             `}</style>

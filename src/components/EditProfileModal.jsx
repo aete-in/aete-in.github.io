@@ -23,6 +23,7 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [newResourceRoles, setNewResourceRoles] = useState(userData?.resourceRoles || []); // Resource Roles State
 
     // Photo Upload State
     const [imageSrc, setImageSrc] = useState(null);
@@ -52,6 +53,9 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
             Object.keys(formData).forEach(key => {
                 updates[`/users/${currentUser.uid}/${key}`] = formData[key];
             });
+
+            // Save Resource Roles
+            updates[`/users/${currentUser.uid}/resourceRoles`] = newResourceRoles;
 
             // If new photo uploaded, update that too
             if (newPhotoUrl) {
@@ -188,26 +192,50 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
                             <label>Bio</label>
                             <textarea name="bio" value={formData.bio} onChange={handleInputChange} className="form-control" rows="3" />
                         </div>
+
+                        {/* Resource Roles Selection */}
+                        <div className="form-group full-width mt-4 p-4 bg-gray-50 rounded border border-gray-200">
+                            <label className="block mb-2 font-semibold text-gray-700">
+                                Resource Person Roles
+                            </label>
+                            <div className="flex flex-wrap gap-2 role-chips-container">
+                                {[
+                                    "Hackathon Judge", "Conference Chair", "Journal Paper Reviewer", "Technical Keynote Speaker",
+                                    "Startup Mentor", "Innovation Consultant", "Curriculum Advisor", "Project Evaluator",
+                                    "Research Collaborator", "Guest Lecturer", "Panelist", "Internship Mentor",
+                                    "Patent Consultant", "Grant Proposal Reviewer", "Syllabus Framer", "Career Counselor",
+                                    "Professional Trainer", "Advisory Board Member", "BoS Member"
+                                ].map(role => (
+                                    <div
+                                        key={role}
+                                        onClick={() => {
+                                            setNewResourceRoles(prev =>
+                                                prev.includes(role)
+                                                    ? prev.filter(r => r !== role)
+                                                    : [...prev, role]
+                                            );
+                                        }}
+                                        className={`role-chip ${newResourceRoles.includes(role) ? 'selected' : ''}`}
+                                    >
+                                        {role}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
-                <div className="btn-group">
-                    <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-                    <button onClick={handleSave} className="btn btn-primary" disabled={uploading}>
-                        {uploading ? 'Saving...' : 'Save Changes'}
-                    </button>
+                <div className="modal-footer">
+                    <div className="btn-group">
+                        <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+                        <button onClick={handleSave} className="btn btn-primary" disabled={loading}>
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
                 </div>
 
-                <div className="danger-zone mt-8 pt-6 border-t border-red-200">
-                    <h4 className="text-red-700 font-bold text-sm mb-2">Danger Zone</h4>
-                    <button
-                        onClick={handleDeleteAccount}
-                        className="btn btn-danger w-full"
-                        style={{ background: '#fff5f5', color: '#c53030', border: '1px solid #fc8181' }}
-                    >
-                        Delete My Account
-                    </button>
-                </div>
+
             </div>
 
             {isCropping && (
@@ -248,70 +276,100 @@ const EditProfileModal = ({ currentUser, userData, onClose, onUpdateSuccess }) =
             )}
 
             <style jsx="true">{`
-                .modal-overlay {
-                    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-                    display: flex; align-items: center; justify-content: center; z-index: 1000;
-                }
-                .modal-content {
-                    background: white; border-radius: 12px; width: 90%; max-width: 600px;
-                    max-height: 90vh; display: flex; flex-direction: column;
-                    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-                }
-                .modal-header {
-                    padding: 1.5rem; border-bottom: 1px solid #e5e7eb;
-                    display: flex; justify-content: space-between; align-items: center;
-                }
-                .modal-body {
-                    padding: 1.5rem; overflow-y: auto;
-                }
-                .modal-footer {
-                    padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;
-                    display: flex; justify-content: flex-end; gap: 1rem;
-                }
-                
-                .photo-section {
-                    display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem;
-                }
-                .current-photo {
-                    position: relative; width: 100px; height: 100px;
-                }
-                .current-photo img {
-                    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-                    border: 3px solid #e2e8f0;
-                }
-                .photo-edit-btn {
-                    position: absolute; bottom: 0; right: 0;
-                    background: var(--color-secondary); color: white;
-                    width: 32px; height: 32px; border-radius: 50%;
-                    display: flex; align-items: center; justify-content: center;
-                    cursor: pointer; border: 2px solid white;
-                }
-                .photo-hint { font-size: 0.8rem; color: #718096; margin-top: 0.5rem; }
+                 .modal-overlay {
+                     position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+                     display: flex; align-items: center; justify-content: center; z-index: 1000;
+                 }
+                 .modal-content {
+                     background: white; border-radius: 12px; width: 90%; max-width: 600px;
+                     max-height: 90vh; display: flex; flex-direction: column;
+                     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+                 }
+                 .modal-header {
+                     padding: 1.5rem; border-bottom: 1px solid #e5e7eb;
+                     display: flex; justify-content: space-between; align-items: center;
+                 }
+                 .modal-body {
+                     padding: 1.5rem; overflow-y: auto;
+                 }
+                 .modal-footer {
+                     padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;
+                     display: flex; justify-content: flex-end; /* Align right */
+                 }
+                 .btn-group {
+                     display: flex; gap: 1rem;
+                 }
+                 
+                 .photo-section {
+                     display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem;
+                 }
+                 .current-photo {
+                     position: relative; width: 100px; height: 100px;
+                 }
+                 .current-photo img {
+                     width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+                     border: 3px solid #e2e8f0;
+                 }
+                 .photo-edit-btn {
+                     position: absolute; bottom: 0; right: 0;
+                     background: var(--color-secondary); color: white;
+                     width: 32px; height: 32px; border-radius: 50%;
+                     display: flex; align-items: center; justify-content: center;
+                     cursor: pointer; border: 2px solid white;
+                 }
+                 .photo-hint { font-size: 0.8rem; color: #718096; margin-top: 0.5rem; }
+ 
+                 .form-grid {
+                     display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+                 }
+                 .full-width { grid-column: 1 / -1; }
+                 
+                 .form-group label {
+                     display: block; font-size: 0.9rem; font-weight: 500; color: #4a5568; margin-bottom: 0.3rem;
+                 }
+                 .form-control {
+                     width: 100%; padding: 0.6rem; border: 1px solid #cbd5e0; border-radius: 6px;
+                 }
+                 
+                 .btn { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; border: none; }
+                 .btn-secondary { background: #e2e8f0; color: #4a5568; }
+                 .btn-primary { background: var(--color-primary); color: white; }
+                 .close-btn { background: none; border: none; cursor: pointer; color: #718096; }
 
-                .form-grid {
-                    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+                 .role-chips-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    margin-top: 0.5rem;
                 }
-                .full-width { grid-column: 1 / -1; }
-                
-                .form-group label {
-                    display: block; font-size: 0.9rem; font-weight: 500; color: #4a5568; margin-bottom: 0.3rem;
+                .role-chip {
+                    padding: 0.3rem 0.8rem;
+                    border-radius: 50px;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    border: 1px solid #cbd5e0;
+                    background-color: #f7fafc;
+                    color: #4a5568;
+                    transition: all 0.2s;
+                    user-select: none;
                 }
-                .form-control {
-                    width: 100%; padding: 0.6rem; border: 1px solid #cbd5e0; border-radius: 6px;
+                .role-chip:hover {
+                    background-color: #edf2f7;
+                    border-color: #a0aec0;
                 }
-                
-                .btn { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; border: none; }
-                .btn-secondary { background: #e2e8f0; color: #4a5568; }
-                .btn-primary { background: var(--color-primary); color: white; }
-                .close-btn { background: none; border: none; cursor: pointer; color: #718096; }
-
-                /* Cropper Styles reused */
-                .cropper-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-                .cropper-container { background: white; width: 90%; max-width: 500px; height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-                .cropper-header { padding: 1rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-                .crop-area { position: relative; flex: 1; background: #333; }
-                .controls { padding: 1rem; background: white; }
-            `}</style>
+                .role-chip.selected {
+                    background-color: var(--color-primary);
+                    color: white;
+                    border-color: var(--color-primary);
+                }
+ 
+                 /* Cropper Styles reused */
+                 .cropper-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+                 .cropper-container { background: white; width: 90%; max-width: 500px; height: 80vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+                 .cropper-header { padding: 1rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+                 .crop-area { position: relative; flex: 1; background: #333; }
+                 .controls { padding: 1rem; background: white; }
+             `}</style>
 
             {uploadingPhoto && <LoadingOverlay message="Uploading photo..." />}
         </div>

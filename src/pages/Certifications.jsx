@@ -6,7 +6,7 @@ import PageHero from '../components/PageHero';
 const Certifications = () => {
     return (
         <div className="certifications-page">
-            <SEO title="Certifications" description="Verify AETE issued certificates. Authorized by an MSME registered organization." />
+            <SEO title="Certifications" description="Verify AETE issued certificates. Authorized by a professional organization." />
             <PageHero
                 title="Certifications & Validation"
                 subtitle="Recognized credentials for your professional journey."
@@ -27,7 +27,7 @@ const Certifications = () => {
                     <div className="badge-content">
                         <h2>Official Certification Statement</h2>
                         <p className="declaration">
-                            “Issued by AETE – Industry–Academia Technology & Education Organization (MSME Registered, Government of India).”
+                            “Issued by AETE – Industry–Academia Technology & Education Organization.”
                         </p>
                         <p className="sub-text">
                             All certificates issued by AETE® bear this offical validation statement to ensure authenticity and recognition.

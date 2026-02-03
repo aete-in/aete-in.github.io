@@ -2,13 +2,13 @@ import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
 import SEO from '../components/SEO';
 
-import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 const Contact = () => {
     return (
         <div className="contact-page">
             <SEO title="Contact Us" description="Get in touch with AETE for collaborations and inquiries." />
-            <PageHeader
+            <PageHero
                 title="Contact Us"
                 subtitle="Get in touch with us for collaborations and queries."
             />

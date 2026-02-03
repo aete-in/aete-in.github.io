@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Network, GraduationCap, Building2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
-import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 const CampusChapters = () => {
   const containerVariants = {
@@ -39,7 +39,7 @@ const CampusChapters = () => {
   return (
     <div className="chapters-page">
       <SEO title="Campus Clubs" description="Establish an AETE club at your institution: Student Innovation Clubs & Collaboration Cells." />
-      <PageHeader
+      <PageHero
         title="Campus Innovation Clubs"
         subtitle="Extending our reach through institutional partnerships."
       />

@@ -111,7 +111,7 @@ const ResourcePersons = () => {
                         <p>
                             Are you an industry professional or senior academician? Join our pool of experts to share your knowledge and impact engineering education.
                         </p>
-                        <Link to="/membership" className="btn btn-outline">Apply for Membership</Link>
+                        <Link to="/signup" className="btn btn-outline">Apply for Membership</Link>
                     </div>
                 </div>
             </div>
@@ -260,9 +260,9 @@ const ResourcePersons = () => {
                 }
 
                 .highlight-disclaimer {
-                    background: #fff5f5;
-                    border: 1px solid #feb2b2;
-                    color: #c53030;
+                    background: #ebf8ff;
+                    border: 1px solid #bee3f8;
+                    color: #2c5282;
                     padding: 1rem;
                     border-radius: 8px;
                     margin-top: 1.5rem;

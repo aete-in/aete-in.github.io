@@ -8,7 +8,7 @@ import EditProfileModal from '../components/EditProfileModal';
 import CertificateGenerator from '../components/CertificateGenerator';
 
 const Dashboard = () => {
-    const { currentUser, userData, logout, resendVerification, fetchUserData } = useAuth();
+    const { currentUser, userData, logout, resendVerification, fetchUserData, deleteAccount } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [verificationSent, setVerificationSent] = useState(false);
@@ -140,6 +140,18 @@ const Dashboard = () => {
         // Optional: Show a success toast here
     };
 
+    const handleDelete = async () => {
+        if (window.confirm("Are you sure you want to PERMANENTLY delete your account? This action cannot be undone and will remove all your data.")) {
+            try {
+                await deleteAccount();
+                navigate('/'); // Redirect to home after deletion
+            } catch (error) {
+                console.error(error);
+                alert("Failed to delete account. Please try again.");
+            }
+        }
+    };
+
     return (
         <div className="dashboard-page section container">
             <SEO title="Dashboard" description="User Dashboard" />
@@ -147,7 +159,7 @@ const Dashboard = () => {
             {!currentUser.emailVerified && (
                 <div className="alert-warning mb-4">
                     <p>
-                        Your email is not verified. Please check your inbox.
+                        Your email is not verified. Please check your inbox. Only after verification your profile will be shown in the pool and you will be able to see others.
                         {!verificationSent ? (
                             <button
                                 onClick={handleResend}
@@ -179,6 +191,7 @@ const Dashboard = () => {
                         <Edit size={16} /> Edit Profile
                     </button>
                     <button onClick={handleLogout} className="btn btn-outline">Logout</button>
+                    <button onClick={handleDelete} className="btn btn-danger">Delete Account</button>
                 </div>
             </div>
 
@@ -218,6 +231,7 @@ const Dashboard = () => {
                         </div>
                     )}
 
+
                     {userData?.membershipStatus === 'active' && (
                         <div style={{ marginTop: '1.5rem' }}>
                             {userData?.tier !== 'free' ? (
@@ -242,6 +256,8 @@ const Dashboard = () => {
                         </div>
                     )}
                 </div>
+
+
             </div>
 
             {showEditModal && (
@@ -269,6 +285,99 @@ const Dashboard = () => {
                     padding-bottom: 1rem;
                     gap: 1rem;
                     flex-wrap: wrap;
+                }
+                .text-muted { color: #718096; margin-top: 0.25rem; font-size: 0.95rem; }
+                .header-actions {
+                    display: flex; gap: 1rem; align-items: center;
+                }
+                .card {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                    border: 1px solid #e2e8f0;
+                }
+                .btn {
+                    padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; border: none;
+                    display: flex; align-items: center; gap: 0.5rem; font-weight: 500;
+                    font-size: 0.95rem;
+                }
+                .btn-secondary { background: #edf2f7; color: #4a5568; }
+                .btn-secondary:hover { background: #e2e8f0; }
+                .btn-outline {
+                    background: transparent;
+                    border: 1px solid var(--color-primary);
+                    color: var(--color-primary);
+                }
+                .btn-outline:hover {
+                    background: var(--color-primary); color: white;
+                }
+                .alert-warning {
+                    background-color: #fffaf0;
+                    border: 1px solid #fbd38d;
+                    color: #9c4221;
+                    padding: 0.75rem;
+                    border-radius: 8px;
+                    margin-bottom: 1.5rem;
+                    text-align: center;
+                    font-size: 0.9rem;
+                }
+                .btn-link {
+                    background: none;
+                    border: none;
+                    color: var(--color-secondary);
+                    text-decoration: underline;
+                    cursor: pointer;
+                    margin-left: 0.5rem;
+                    font-weight: 600;
+                }
+                .text-success {
+                    color: #2f855a;
+                    font-weight: 600;
+                }
+                .text-error {
+                     color: #e53e3e;
+                     font-weight: 600;
+                }
+
+                /* Dashboard specific padding override */
+                .dashboard-page {
+                    padding-top: 8rem !important;
+                }
+
+                @media (max-width: 600px) {
+                    .dashboard-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+                    
+                    .header-actions { 
+                        width: 100%; 
+                        flex-direction: column; /* STACK VERTICALLY */
+                        gap: 0.75rem; 
+                    }
+                    .header-actions button {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    
+                    .dashboard-page { padding-top: 6rem !important; }
+                    
+                    .alert-warning {
+                        text-align: left;
+                        padding: 1rem;
+                    }
+                    .alert-warning button {
+                        display: block;
+                        margin-left: 0;
+                        margin-top: 0.5rem;
+                    }
+                }
+
+                .btn-danger {
+                    background-color: #dc2626;
+                    color: white;
+                    border: none;
+                }
+                .btn-danger:hover {
+                    background-color: #b91c1c;
                 }
                 .text-muted { color: #718096; margin-top: 0.25rem; font-size: 0.95rem; }
                 .header-actions {
@@ -326,8 +435,17 @@ const Dashboard = () => {
 
                 @media (max-width: 600px) {
                     .dashboard-header { flex-direction: column; align-items: flex-start; }
-                    .header-actions { width: 100%; justify-content: flex-end; }
+                    .header-actions { width: 100%; justify-content: flex-end; flex-wrap: wrap; gap: 0.5rem; }
                     .dashboard-page { padding-top: 6rem !important; }
+                }
+
+                .btn-danger {
+                    background-color: #dc2626;
+                    color: white;
+                    border: none;
+                }
+                .btn-danger:hover {
+                    background-color: #b91c1c;
                 }
             `}</style>
         </div>

@@ -22,6 +22,7 @@ const MembershipApplication = () => {
     const [success, setSuccess] = useState('');
     const [status, setStatus] = useState(''); // General status for form feedback
     const [loading, setLoading] = useState(false); // Used for image processing/uploading
+    const [resourceRoles, setResourceRoles] = useState(userData?.resourceRoles || []); // Resource Person Roles
 
     // Cropper State
     const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -159,7 +160,8 @@ const MembershipApplication = () => {
                     experience: formData.experience,
                     expertise: formData.expertise,
                     location: formData.location,
-                    bio: formData.bio
+                    bio: formData.bio,
+                    resourceRoles: resourceRoles // Save selected roles
                 });
             } else if (membershipType === 'institutional') {
                 Object.assign(details, {
@@ -475,6 +477,38 @@ const MembershipApplication = () => {
                             <input type="file" className="form-control" onChange={onFileChange} accept="image/*" />
                             {uploadedPhotoUrl && <p className="text-success text-sm mt-1">Photo uploaded successfully!</p>}
                         </div>
+
+                        {/* Resource Roles Selection */}
+                        <div className="form-group mt-6 p-4 bg-white rounded border border-gray-200">
+                            <label className="block mb-2 font-semibold text-gray-700">
+                                Interested in acting as a Resource Person? (Select all that apply)
+                            </label>
+                            <p className="text-xs text-gray-500 mb-3">This helps us connect you with relevant opportunities.</p>
+
+                            <div className="flex flex-wrap gap-2 role-chips-container">
+                                {[
+                                    "Hackathon Judge", "Conference Chair", "Journal Paper Reviewer", "Technical Keynote Speaker",
+                                    "Startup Mentor", "Innovation Consultant", "Curriculum Advisor", "Project Evaluator",
+                                    "Research Collaborator", "Guest Lecturer", "Panelist", "Internship Mentor",
+                                    "Patent Consultant", "Grant Proposal Reviewer", "Syllabus Framer", "Career Counselor",
+                                    "Professional Trainer", "Advisory Board Member", "BoS Member"
+                                ].map(role => (
+                                    <div
+                                        key={role}
+                                        onClick={() => {
+                                            setResourceRoles(prev =>
+                                                prev.includes(role)
+                                                    ? prev.filter(r => r !== role)
+                                                    : [...prev, role]
+                                            );
+                                        }}
+                                        className={`role-chip ${resourceRoles.includes(role) ? 'selected' : ''}`}
+                                    >
+                                        {role}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -688,6 +722,39 @@ const MembershipApplication = () => {
                     background-color: #cbd5e0;
                     cursor: not-allowed;
                 }
+
+                .role-chips-container {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.6rem;
+                }
+                .role-chip {
+                    padding: 0.4rem 1rem;
+                    border-radius: 50px; /* Modern pill shape */
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    border: 1px solid #cbd5e0;
+                    background-color: #f7fafc;
+                    color: #4a5568;
+                    transition: all 0.2s ease-in-out;
+                    user-select: none;
+                    font-weight: 500;
+                }
+                .role-chip:hover {
+                    background-color: #edf2f7;
+                    border-color: #a0aec0;
+                    transform: translateY(-1px);
+                }
+                .role-chip.selected {
+                    background-color: var(--color-primary);
+                    color: white;
+                    border-color: var(--color-primary);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                .role-chip.selected:hover {
+                    opacity: 0.9;
+                }
+
                 .select-max-width {
                     max-width: 100%;
                     width: 100%;

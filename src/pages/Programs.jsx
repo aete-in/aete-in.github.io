@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { BookOpen, Users, Cpu, Code, Lightbulb, Presentation, Share2, Award } from 'lucide-react';
 import SEO from '../components/SEO';
-import PageHeader from '../components/PageHeader';
+import PageHero from '../components/PageHero';
 
 const Programs = () => {
   const containerVariants = {
@@ -63,7 +63,7 @@ const Programs = () => {
   return (
     <div className="programs-page">
       <SEO title="Programs & Activities" description="Explore our FDPs, Workshops, Hackathons, and Student Training programs." />
-      <PageHeader
+      <PageHero
         title="Programs & Activities"
         subtitle="Empowering the academic community through structured learning initiatives."
       />

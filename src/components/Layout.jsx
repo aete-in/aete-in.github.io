@@ -6,7 +6,7 @@ const Layout = () => {
     return (
         <div className="key-layout-wrapper" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Navbar />
-            <main style={{ marginTop: '80px', flex: 1 }}> {/* Add margin for fixed navbar */}
+            <main style={{ flex: 1 }}>
                 <Outlet />
             </main>
             <Footer />

@@ -80,11 +80,11 @@ const Login = () => {
       </div>
       <style jsx="true">{`
         .auth-page {
-          min-height: 80vh;
+          min-height: 100vh;
           display: flex;
           align-items: center;
-          background-color: #f7fafc;
-          padding: 2rem 0;
+          background: linear-gradient(135deg, var(--color-primary) 0%, #001f44 100%);
+          padding: 8rem 0 4rem;
         }
         .auth-container {
           display: flex;

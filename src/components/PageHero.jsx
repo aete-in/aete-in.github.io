@@ -8,6 +8,7 @@ const PageHero = ({ title, subtitle, className = "" }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
+          style={{ width: '100%' }}
         >
           <h1 className="hero-title">{title}</h1>
           {subtitle && <p className="hero-subtitle">{subtitle}</p>}
@@ -22,6 +23,10 @@ const PageHero = ({ title, subtitle, className = "" }) => {
           position: relative;
           text-align: center;
           margin-bottom: 3rem;
+          min-height: 420px; /* Enforce consistent height */
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .hero-title {
@@ -50,6 +55,10 @@ const PageHero = ({ title, subtitle, className = "" }) => {
           .hero-subtitle {
             font-size: 1.1rem;
           }
+        }
+
+        .hero-content {
+          width: 100%;
         }
       `}</style>
     </div>

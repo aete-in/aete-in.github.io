@@ -123,9 +123,15 @@ const Membership = () => {
                 </div>
               </div>
 
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                {plan.subtitle}
-              </h4>
+              {plan.subtitle === "FREE TIER AVAILABLE" ? (
+                <div className="free-tier-badge">
+                  {plan.subtitle}
+                </div>
+              ) : (
+                <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                  {plan.subtitle}
+                </h4>
+              )}
               <p>{plan.description}</p>
 
               <ul className="benefits-list">
@@ -325,6 +331,19 @@ const Membership = () => {
             margin-bottom: 0.75rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             letter-spacing: 0.5px;
+        }
+
+        .free-tier-badge {
+            display: inline-block;
+            background: #dcfce7; /* Light Green */
+            color: #166534;      /* Dark Green */
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            border: 1px solid #bbf7d0;
         }
 
         .member-card:hover {

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { db } from '../firebase';
 import { ref, query, orderByChild, equalTo, get } from 'firebase/database';
 import { Search, CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
@@ -6,6 +8,7 @@ import PageHero from '../components/PageHero';
 import SEO from '../components/SEO';
 
 const VerifiedMember = () => {
+    const { currentUser } = useAuth();
     const [searchId, setSearchId] = useState('');
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -48,60 +51,75 @@ const VerifiedMember = () => {
 
             <div className="container section">
                 <div className="verification-card">
-                    <div className="search-box">
-                        <form onSubmit={handleVerify}>
-                            <label htmlFor="memberId">Enter Membership ID</label>
-                            <div className="input-group">
-                                <input
-                                    type="text"
-                                    id="memberId"
-                                    placeholder="e.g. LM0201"
-                                    value={searchId}
-                                    onChange={(e) => setSearchId(e.target.value)}
-                                    className="form-input"
-                                />
-                                <button type="submit" className="btn btn-primary" disabled={loading}>
-                                    {loading ? 'Verifying...' : 'Verify'}
-                                </button>
+                    {!currentUser ? (
+                        <div className="error-card" style={{ borderTopColor: 'var(--color-primary)' }}>
+                            <div className="result-icon">
+                                <ShieldCheck size={48} color="var(--color-primary)" />
                             </div>
-                        </form>
-                    </div>
+                            <h3>Authentication Required</h3>
+                            <p>You must be logged in to verify membership status.</p>
+                            <Link to="/login" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>
+                                Login to Verify
+                            </Link>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="search-box">
+                                <form onSubmit={handleVerify}>
+                                    <label htmlFor="memberId">Enter Membership ID</label>
+                                    <div className="input-group">
+                                        <input
+                                            type="text"
+                                            id="memberId"
+                                            placeholder="e.g. LM0201"
+                                            value={searchId}
+                                            onChange={(e) => setSearchId(e.target.value)}
+                                            className="form-input"
+                                        />
+                                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                                            {loading ? 'Verifying...' : 'Verify'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
 
-                    {hasSearched && !loading && (
-                        <div className="result-area">
-                            {result ? (
-                                <div className="success-card">
-                                    <div className="result-icon success">
-                                        <CheckCircle size={48} />
-                                    </div>
-                                    <h3>Verified Member</h3>
-                                    <div className="member-details">
-                                        <p><strong>Name:</strong> {result.name}</p>
-                                        <p><strong>Membership ID:</strong> {result.membershipId}</p>
-                                        <p><strong>Type:</strong> <span style={{ textTransform: 'capitalize' }}>{result.membershipType}</span></p>
-                                        <p><strong>Status:</strong> <span className="badge-active">Active</span></p>
-                                        {result.membershipDate && (
-                                            <p><strong>Member Since:</strong> {new Date(result.membershipDate).getFullYear()}</p>
-                                        )}
-                                    </div>
-                                    <div className="seal">
-                                        <ShieldCheck size={24} /> Official Record
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="error-card">
-                                    <div className="result-icon error">
-                                        <XCircle size={48} />
-                                    </div>
-                                    <h3>Record Not Found</h3>
-                                    <p>No active membership found for ID: <strong>{searchId}</strong></p>
-                                    <p className="help-text">Please check the ID and try again, or contact support.</p>
+                            {hasSearched && !loading && (
+                                <div className="result-area">
+                                    {result ? (
+                                        <div className="success-card">
+                                            <div className="result-icon success">
+                                                <CheckCircle size={48} />
+                                            </div>
+                                            <h3>Verified Member</h3>
+                                            <div className="member-details">
+                                                <p><strong>Name:</strong> {result.name}</p>
+                                                <p><strong>Membership ID:</strong> {result.membershipId}</p>
+                                                <p><strong>Type:</strong> <span style={{ textTransform: 'capitalize' }}>{result.membershipType}</span></p>
+                                                <p><strong>Status:</strong> <span className="badge-active">Active</span></p>
+                                                {result.membershipDate && (
+                                                    <p><strong>Member Since:</strong> {new Date(result.membershipDate).getFullYear()}</p>
+                                                )}
+                                            </div>
+                                            <div className="seal">
+                                                <ShieldCheck size={24} /> Official Record
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="error-card">
+                                            <div className="result-icon error">
+                                                <XCircle size={48} />
+                                            </div>
+                                            <h3>Record Not Found</h3>
+                                            <p>No active membership found for ID: <strong>{searchId}</strong></p>
+                                            <p className="help-text">Please check the ID and try again, or contact support.</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                        </div>
-                    )}
 
-                    {error && <p className="error-msg">{error}</p>}
+                            {error && <p className="error-msg">{error}</p>}
+                        </>
+                    )}
                 </div>
             </div>
 

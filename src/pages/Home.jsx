@@ -262,14 +262,14 @@ const Home = () => {
         .landing-wrapper {
           position: relative;
           width: 100%;
-          /* SUBTRACT NAV HEIGHT (Layout adds 80px margin-top, plus buffer) */
-          height: calc(100dvh - 85px); 
+          /* FILL VIEWPORT completely */
+          height: 100dvh;   
           overflow: hidden; 
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: space-between;
-          background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+          background: linear-gradient(135deg, var(--color-primary) 0%, #001f44 100%);
           padding-top: 0; 
         }
 
@@ -468,120 +468,111 @@ const Home = () => {
 
         /* --- MOBILE LAYOUT --- */
         
+        /* --- COMPACT MOBILE LAYOUT (Fit in Viewport) --- */
+        
         @media (max-width: 960px) {
             .landing-wrapper {
-                min-height: calc(100dvh - 85px); /* Changed from fixed height to min-height */
-                height: auto; /* Allow growth */
-                overflow-y: auto; /* Enable scroll if needed */
-                overflow-x: hidden;
-                justify-content: flex-start; /* Start from top */
-                padding-bottom: 80px; /* Space for stats dock */
+                height: 100dvh; /* Force full viewport height */
+                min-height: 100dvh;
+                overflow: hidden; /* Prevent scrolling */
+                padding-bottom: 0;
             }
 
             .hero-content-wrapper {
-                flex: 0 0 auto;
-                padding-top: 2rem;
-                padding-bottom: 2rem;
+                padding-top: 4.5rem; /* Reduced to minimum for navbar clearance (Navbar is ~70px) */
+                padding-bottom: 0.5rem;
+                justify-content: center; /* Center content vertically */
             }
 
             .hero-grid {
-                gap: 2rem;
-                padding-top: 1rem;
+                gap: 0.5rem; /* Tighten gap */
+                padding-top: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-evenly; /* Distribute space */
+                height: 100%;
             }
 
-            /* Fix Stats Dock to be fixed at bottom or relative? 
-               Let's make it fixed at bottom for consistency, or relative if content is long.
-               For "Fit Hero", fixed is better. */
-            .stats-dock {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                z-index: 50;
-                padding: 1rem 0;
-            }
-            /* Add buffer to body or wrapper so content isn't hidden behind fixed dock */
-            
             .hero-visual-area { 
-                height: 220px;
-                margin-bottom: 1rem;
+                height: 160px; /* Slightly reduced to ensure fit */
+                min-height: 160px; /* FORCE height */
+                flex: 0 0 auto; /* Prevent shrinking */
+                margin-bottom: 0;
+                width: 100%; /* Ensure width */
             }
 
             .orbital-system {
-                height: 220px; /* Smaller orbit as requested */
-                max-width: 100%; /* Prevent overflow */
+                height: 160px; 
+                width: 100%;
+                max-width: 250px; /* Constraint width */
             }
             
-            .center-logo { font-size: 2rem; } /* Smaller center logo to match orbit */
+            .center-logo { font-size: 1.8rem; }
+            .float-card { padding: 0.3rem 0.6rem; transform: scale(0.85); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
             .hero-text-area {
-                width: 100%;
-                height: auto;
-                justify-content: flex-start;
-                align-items: center;
-                padding-bottom: 3rem; /* More bottom padding */
+                padding-bottom: 0;
+                justify-content: center;
+                gap: 0.25rem;
+                flex: 1 1 auto; /* Allow text area to shrink if needed */
+                min-height: 0; /* critical for flex scrolling/fitting */
             }
 
             /* Ultra Compact Text */
             .main-title {
-                font-size: clamp(2rem, 5.5vh, 2.8rem); /* Slightly reduced max size for safety */
-                margin-bottom: 1rem;
-                line-height: 1.15;
-                letter-spacing: -0.02em;
-                word-wrap: break-word; /* Ensure long words break */
+                font-size: clamp(1.8rem, 4vh, 2.5rem); 
+                margin-bottom: 0.5rem;
             }
             .hero-subtitle {
-                font-size: 1rem; /* Slightly larger subtitle */
-                line-height: 1.6;
-                margin-bottom: 2rem; /* More spacing before buttons */
-                color: #dbeafe; /* Lighter/Brighter for contrast */
+                font-size: 0.9rem;
+                line-height: 1.3;
+                margin-bottom: 1rem;
+                display: -webkit-box;
+                -webkit-line-clamp: 2; /* Limit to 2 lines */
+                -webkit-box-orient: vertical;
+                overflow: hidden;
             }
             
             .action-buttons {
-                justify-content: center;
-                gap: 1rem; /* More space between buttons */
-                flex-direction: column; /* Stack buttons on very small screens if needed, but keeping row for now */
-                width: 100%;
+                margin-top: 0.25rem;
+                gap: 0.75rem; 
+                flex-direction: row; /* Keep row if possible, or small col */
             }
             .btn-glow, .btn-glass {
-                width: 100%; /* Full width buttons on mobile */
-                justify-content: center;
-                padding: 1rem;
+                padding: 0.5rem 1rem;
+                width: auto;
+                font-size: 0.85rem;
             }
 
-            /* Compact 2x2 Stats */
+            /* Compact Stats Dock */
             .stats-dock {
-                padding: 1.5rem 0;
-                background: rgba(15, 23, 42, 0.98); 
+                position: relative; /* Keep relative to flow, but wrapper is locked */
+                padding: 0.75rem 0;
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(10px);
+                margin-top: auto; /* Push to bottom */
             }
             .dock-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-                row-gap: 1.5rem;
+                gap: 0.25rem;
+                row-gap: 0.5rem;
             }
-            .dock-item h3 { font-size: 1.6rem; }
-            .dock-item p { font-size: 0.7rem; }
+            .dock-item h3 { font-size: 1.2rem; margin-bottom: 0; }
+            .dock-item p { font-size: 0.6rem; }
         }
 
-        /* --- ULTRA COMPACT MOBILE FIX (<750px Height) --- */
-        @media (max-height: 750px) and (max-width: 600px) {
-             .landing-wrapper { justify-content: space-between; }
-             /* Shift content UP to make room for stats */
-             .hero-content-wrapper { 
-                 justify-content: flex-start !important; 
-                 padding-top: 5vh !important; 
-                 padding-bottom: 0; 
-             }
-             
-             .main-title { font-size: 1.35rem !important; margin-bottom: 0.5rem !important; }
-             .hero-subtitle { font-size: 0.8rem !important; margin-bottom: 0.75rem !important; line-height: 1.25 !important; }
-             
-             .stats-dock { padding: 0.5rem 0 !important; }
-             .dock-grid { row-gap: 0.5rem !important; }
-             .dock-item h3 { font-size: 1.2rem !important; margin-bottom: 0 !important; }
-             .dock-item p { font-size: 0.6rem !important; margin-top: 0 !important; }
-             
-             .btn-glow, .btn-glass { padding: 0.5rem 1rem !important; font-size: 0.8rem !important; }
+        /* --- LANDSCAPE / VERY SHORT SCREENS --- */
+        @media (max-height: 480px) and (max-width: 960px) {
+             .hero-visual-area { display: none; } /* Hide only on extremely short screens */
+             .hero-content-wrapper { padding-top: 4rem; }
+        }
+
+        /* Adjust visual size for standard mobile height (approx 550-650px) */
+        @media (max-height: 650px) and (max-width: 960px) {
+            .hero-visual-area { height: 140px; min-height: 140px; }
+            .orbital-system { height: 140px; width: 140px; }
+            .main-title { font-size: 1.6rem; margin-bottom: 0.25rem; }
+            .hero-subtitle { font-size: 0.85rem; margin-bottom: 0.75rem; }
+            .stats-dock { padding: 0.5rem 0; }
         }
 
         /* --- OTHER SECTIONS --- */
