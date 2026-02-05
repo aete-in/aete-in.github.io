@@ -77,7 +77,7 @@ const Home = () => {
                   Find an Expert <ArrowRight size={18} />
                 </Link>
                 <Link to="/membership" className="btn-glass">
-                  View Access Plans
+                  Join Now
                 </Link>
               </motion.div>
             </motion.div>
