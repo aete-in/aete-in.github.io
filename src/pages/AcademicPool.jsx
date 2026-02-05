@@ -86,18 +86,26 @@ const AcademicPool = () => {
 
     if (loading) return null;
 
-    // STRICT: If not logged in, show NOTHING (empty list)
-    // The UI will handle the "Please Login" message
+    // Helper function to determine if a card should be locked
+    const isCardLocked = (profile) => {
+        if (!currentUser) return true; // Not logged in = locked
+        if (isViewerPaid) return false; // Paid users see everything unlocked
+
+        const profileEffectiveTier = profile.tier || 'paid'; // Legacy users default to paid
+        return profileEffectiveTier === 'free'; // Free viewing free = locked
+    };
+
+    // NEW: Show ALL profiles to logged-in users (but lock them in UI if needed)
+    // If not logged in, show NOTHING (empty list)
     const filteredPersons = !currentUser ? [] : persons.filter(person => {
-        // Visibility Check
-        const isProfilePaid = person.tier === 'paid';
-        const effectiveTier = person.tier || 'paid'; // Default to paid for legacy active users
-
-        const isVisible = (effectiveTier === 'paid') || isViewerPaid;
-
-        if (!isVisible) return false;
-
         const term = searchTerm.toLowerCase();
+
+        // For locked cards, only search by name (since other fields are hidden)
+        if (isCardLocked(person)) {
+            return person.name?.toLowerCase().includes(term);
+        }
+
+        // For unlocked cards, search all fields
         return (
             person.name?.toLowerCase().includes(term) ||
             person.designation?.toLowerCase().includes(term) ||
@@ -146,9 +154,9 @@ const AcademicPool = () => {
                         <div className="banner-content">
                             <Lock size={20} className="banner-icon" />
                             <p>
-                                <strong>Limited View:</strong> You are viewing a restricted list of Resource Persons.
+                                <strong>Limited View:</strong> You can see all Resource Persons, but profiles with locked cards are hidden.
                                 <br className="mobile-break" />
-                                Upgrade to a <strong>Paid Membership</strong> to access the complete directory.
+                                Upgrade to a <strong>Paid Membership</strong> to unlock all profiles and view complete details.
                             </p>
                         </div>
                         <button className="btn-upgrade" onClick={() => navigate('/membership')}>Upgrade Now</button>
@@ -170,76 +178,100 @@ const AcademicPool = () => {
 
                         <div className="experts-grid">
                             {filteredPersons.length > 0 ? (
-                                filteredPersons.map((person, index) => (
-                                    <motion.div
-                                        key={index}
-                                        className="expert-card"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: index * 0.1 }}
-                                        onClick={() => setSelectedPerson(person)}
-                                    >
-                                        <div className="expert-card-content">
-                                            <div className="avatar-large">
-                                                {person.photoUrl ? (
-                                                    <img src={person.photoUrl} alt={person.name} />
+                                filteredPersons.map((person, index) => {
+                                    const locked = isCardLocked(person);
+                                    return (
+                                        <motion.div
+                                            key={index}
+                                            className={`expert-card ${locked ? 'locked-card' : ''}`}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: index * 0.1 }}
+                                            onClick={() => {
+                                                if (locked) {
+                                                    // Show upgrade prompt instead of opening modal
+                                                    navigate('/membership');
+                                                } else {
+                                                    setSelectedPerson(person);
+                                                }
+                                            }}
+                                        >
+                                            <div className="expert-card-content">
+                                                <div className="avatar-large">
+                                                    {person.photoUrl ? (
+                                                        <img src={person.photoUrl} alt={person.name} />
+                                                    ) : (
+                                                        <UserIcon size={80} color="#cbd5e0" />
+                                                    )}
+                                                </div>
+
+                                                {locked ? (
+                                                    <>
+                                                        <div className="locked-content-wrapper">
+                                                            <div className="lock-overlay">
+                                                                <Lock size={32} className="lock-icon" />
+                                                                <h4 className="lock-title">Upgrade to Unlock</h4>
+                                                                <p className="lock-text">View full profile details</p>
+                                                            </div>
+                                                        </div>
+                                                    </>
                                                 ) : (
-                                                    <UserIcon size={80} color="#cbd5e0" />
-                                                )}
-                                            </div>
+                                                    <>
+                                                        <h3 className="expert-name">{person.name}</h3>
+                                                        <p className="expert-designation">{person.designation}</p>
+                                                        <p className="expert-org">{person.organization}</p>
 
-                                            <h3 className="expert-name">{person.name}</h3>
-                                            <p className="expert-designation">{person.designation}</p>
-                                            <p className="expert-org">{person.organization}</p>
+                                                        <div className="expert-divider"></div>
 
-                                            <div className="expert-divider"></div>
+                                                        <div className="expert-meta">
+                                                            <div className="meta-item">
+                                                                <MapPin size={14} />
+                                                                <span>{person.location}</span>
+                                                            </div>
+                                                            <div className="meta-item top-align">
+                                                                <Award size={14} className="mt-1 flex-shrink-0" />
+                                                                <div className="expertise-chips">
+                                                                    {person.expertise?.split(',').slice(0, 3).map((tech, i) => (
+                                                                        <span key={i} className="chip">{tech.trim()}</span>
+                                                                    ))}
+                                                                    {person.expertise?.split(',').length > 3 && (
+                                                                        <span className="chip-more">+{person.expertise.split(',').length - 3}</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            {person.experience && (
+                                                                <div className="meta-item">
+                                                                    <Briefcase size={14} />
+                                                                    <span>Exp: {person.experience}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
 
-                                            <div className="expert-meta">
-                                                <div className="meta-item">
-                                                    <MapPin size={14} />
-                                                    <span>{person.location}</span>
-                                                </div>
-                                                <div className="meta-item top-align">
-                                                    <Award size={14} className="mt-1 flex-shrink-0" />
-                                                    <div className="expertise-chips">
-                                                        {person.expertise?.split(',').slice(0, 3).map((tech, i) => (
-                                                            <span key={i} className="chip">{tech.trim()}</span>
-                                                        ))}
-                                                        {person.expertise?.split(',').length > 3 && (
-                                                            <span className="chip-more">+{person.expertise.split(',').length - 3}</span>
+                                                        {person.bio && (
+                                                            <p className="expert-bio">
+                                                                {getSmartSummary(person.bio)}
+                                                            </p>
                                                         )}
-                                                    </div>
-                                                </div>
-                                                {person.experience && (
-                                                    <div className="meta-item">
-                                                        <Briefcase size={14} />
-                                                        <span>Exp: {person.experience}</span>
-                                                    </div>
+
+                                                        <div className="contact-buttons-card">
+                                                            {person.email && (
+                                                                <a href={`mailto:${person.email}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
+                                                                    <Mail size={16} /> Email
+                                                                </a>
+                                                            )}
+                                                            {person.phone && (
+                                                                <a href={`tel:${person.phone}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
+                                                                    <Phone size={16} /> Call
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </>
                                                 )}
                                             </div>
-
-                                            {person.bio && (
-                                                <p className="expert-bio">
-                                                    {getSmartSummary(person.bio)}
-                                                </p>
-                                            )}
-
-                                            <div className="contact-buttons-card">
-                                                {person.email && (
-                                                    <a href={`mailto:${person.email}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
-                                                        <Mail size={16} /> Email
-                                                    </a>
-                                                )}
-                                                {person.phone && (
-                                                    <a href={`tel:${person.phone}`} className="contact-btn" onClick={(e) => e.stopPropagation()}>
-                                                        <Phone size={16} /> Call
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))
+                                        </motion.div>
+                                    );
+                                })
                             ) : (
                                 <div className="no-access col-span-full">
                                     <p>No resource persons found matching your criteria.</p>
@@ -627,6 +659,79 @@ const AcademicPool = () => {
                     overflow: hidden;
                     margin-bottom: 1.5rem;
                     text-align: justify; /* Justify text */
+                }
+
+                /* Locked Card Styles */
+                .resource-network-page .locked-card {
+                    position: relative;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                }
+
+                .resource-network-page .locked-card:hover {
+                    transform: translateY(-5px) scale(1.02);
+                    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15), 0 15px 15px -5px rgba(0, 0, 0, 0.08);
+                }
+
+                .resource-network-page .locked-content-wrapper {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-grow: 1;
+                    padding: 2rem 1rem;
+                }
+
+                .resource-network-page .lock-overlay {
+                    text-align: center;
+                    z-index: 10;
+                    background: rgba(255, 255, 255, 0.95);
+                    padding: 1.5rem 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                    backdrop-filter: blur(10px);
+                    border: 2px dashed #e2e8f0;
+                }
+
+                .resource-network-page .lock-icon {
+                    color: var(--color-secondary);
+                    margin-bottom: 0.5rem;
+                    animation: lockPulse 2s ease-in-out infinite;
+                }
+
+                @keyframes lockPulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+
+                .resource-network-page .lock-title {
+                    font-size: 1rem;
+                    font-weight: 700;
+                    color: var(--color-primary);
+                    margin-bottom: 0.25rem;
+                }
+
+                .resource-network-page .lock-text {
+                    font-size: 0.85rem;
+                    color: #718096;
+                    margin: 0;
+                }
+
+                .resource-network-page .blurred-text {
+                    filter: blur(6px);
+                    user-select: none;
+                    pointer-events: none;
+                    color: #cbd5e0;
+                }
+
+                .resource-network-page .locked-card .expert-card-content {
+                    position: relative;
+                }
+
+                .resource-network-page .locked-card .avatar-large {
+                    filter: none; /* Photo stays clear */
+                    position: relative;
+                    z-index: 5;
                 }
 
                 .resource-network-page .contact-buttons-card {

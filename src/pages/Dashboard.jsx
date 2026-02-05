@@ -207,7 +207,11 @@ const Dashboard = () => {
                         <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                             <h4 className="text-orange-800 font-semibold mb-2">Upgrade to Paid Membership</h4>
                             <p className="text-sm text-orange-700 mb-4">
-                                Get a verified certificate, full access to the Academic Resource Pool, and more benefits.
+                                {userData?.membershipType === 'student' ? (
+                                    <>Get a verified certificate, <strong>be visible in the Academic Resource Pool directory</strong>, and unlock full access to connect with professionals and other paid members.</>
+                                ) : (
+                                    <>Get a verified certificate, full access to the Academic Resource Pool, and more benefits.</>
+                                )}
                             </p>
                             <button
                                 onClick={() => setShowUpgrade(true)}
